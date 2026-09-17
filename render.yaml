@@ -1,0 +1,33 @@
+# Creates two services. Review Render's displayed costs before applying.
+# Create an environment group named lex-secrets first; see docs/DEPLOY.md.
+services:
+  - type: web
+    name: statelines-lex-api
+    runtime: node
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run migrate:prod
+    startCommand: npm start
+    healthCheckPath: /health/ready
+    autoDeployTrigger: off
+    envVars:
+      - fromGroup: lex-secrets
+      - key: NODE_VERSION
+        value: '24'
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_SSL
+        value: 'true'
+  - type: worker
+    name: statelines-lex-worker
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm run worker
+    autoDeployTrigger: off
+    envVars:
+      - fromGroup: lex-secrets
+      - key: NODE_VERSION
+        value: '24'
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_SSL
+        value: 'true'

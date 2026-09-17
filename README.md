@@ -1,77 +1,81 @@
-# Base44 Project
+# Statelines LEX Backend
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+A Node.js 24 + TypeScript API and PostgreSQL-backed delivery worker for the operational core of Statelines LEX. Designed to sit behind the existing Base44 dashboard.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+**Start here:** [Push to GitHub](docs/PUSH-TO-GITHUB.md) → [Deploy on Render](docs/DEPLOY.md) → [Connect Base44](docs/BASE44.md).
 
-## Prerequisites
+## Implemented
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+- Authenticated API with short-lived, issuer-scoped service JWTs and server-side user roles.
+- Shipment creation, exact-route carrier assignment, a single state machine, shipment history and audit records.
+- Explicit carrier-to-user mapping, capacity reservations, cancellation, delivery and return handling.
+- Optimistic shipment versions, row locking, and durable command idempotency.
+- Transactional outbox: a shipment change, capacity update, history and event commit together.
+- Worker with durable fanout, atomic claims, expiring leases, bounded retries, dead-letter state and replay.
+- Signed HTTPS events, DNS/IP checks, strict per-event acknowledgments, and separate accepted/processed delivery states.
+- Wallet approval records and events with one approval per shipment; no money movement.
+- Operational health, restricted read endpoints, a Base44 adapter, and a durable receiver example.
+- SQL migration, automated tests, CI, local PostgreSQL configuration and Render configuration.
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+## Boundaries
 
-## Run Locally
+This is an operational backend release, not full feature parity with every Base44 screen. Forecasting, fraud scoring, bundle optimization, dynamic pricing, ETA prediction, reputation, rewards and sustainability remain in the existing app until explicitly migrated. This API does not invent pricing or calculate wallet balances. Wallet approval amounts are supplied by an authenticated admin in minor currency units.
 
-Run the full local development environment from the project root:
+No production data has been migrated, no external application has been connected, and no Render or GitHub deployment is performed by these files. Carrier reassignment, multi-leg carrier handoffs, and partial wallet adjustments require additional domain workflows. The implemented post-delivery return reserves the original carrier; another return carrier requires a future reassignment workflow.
 
-```bash
-base44 dev
-```
+## Local development
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
-
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
-
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
-```
-
-In a Base44 project this lives in `base44/config.jsonc`.
-
-## Run Only The Frontend
-
-If you only want to work on the frontend against the hosted Base44 backend, run:
+Install Node.js 24 LTS and Docker Desktop, then:
 
 ```bash
+npm ci
+cp .env.example .env
+npm run keys
+```
+
+Put the generated value in the `secret` field of `API_CLIENTS_JSON` in `.env`. Keep the client ID `base44`. For local tests only, the supplied Docker database credentials are sufficient. Never reuse them in deployment.
+
+```bash
+docker compose up -d
+npm run migrate
 npm run dev
 ```
 
-Open the local URL printed by Vite.
-
-## Use The Hosted Backend
-
-For frontend-only development, create or update `.env.local` in the project root:
+In another terminal, from this directory:
 
 ```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+npm run worker:dev
 ```
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
+Check `http://localhost:3000/health/ready`. Business routes require a signed token; use the Base44 adapter or the [API guide](docs/API.md).
 
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
+## Verification
 
 ```bash
-base44 dashboard open
+npm run check
 ```
 
-## Docs & Support
+The default tests use PGlite, an embedded PostgreSQL engine. For genuine multi-connection locking tests, use a disposable PostgreSQL database named **lex_test**:
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+```bash
+TEST_DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/lex_test npm run check
+```
 
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
+The test suite drops and recreates the `lex` schema in that disposable database. Never point it at production. GitHub Actions runs the suite against PostgreSQL 17. Tests cover API permissions, rollback, concurrency, duplicate commands, delivery completion, wallet approvals, retries, replay, leases, backlog fanout and receiver storage failures.
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+## Structure
+
+```text
+src/app.ts                 API routes and error handling
+src/shipments.ts           Shipment, carrier and wallet operations
+src/domain.ts              State rules, command idempotency and outbox events
+src/auth.ts                Service JWT verification
+src/delivery.ts            Outbox fanout, worker claims and delivery outcomes
+src/webhooks.ts            HTTPS transport and signatures
+src/inbox.ts               Receiver-side durable acceptance helper
+migrations/                Versioned PostgreSQL schema
+integrations/              Base44 adapter and receiving-platform example
+docs/                      Push, deployment, API and integration instructions
+```
+
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for invariants and operational limits, and [VERIFICATION.md](docs/VERIFICATION.md) for the checks performed on this delivery.
