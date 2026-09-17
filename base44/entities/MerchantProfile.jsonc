@@ -1,0 +1,67 @@
+{
+  "name": "MerchantProfile",
+  "type": "object",
+  "properties": {
+    "merchant_name": {
+      "type": "string",
+      "description": "Merchant identifier as recorded on shipments"
+    },
+    "shipment_volume": {
+      "type": "number",
+      "description": "Total shipments recorded"
+    },
+    "growth_trend": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "stable",
+        "declining"
+      ]
+    },
+    "avg_processing_time_hours": {
+      "type": "number",
+      "description": "Created \u2192 first movement event, average hours"
+    },
+    "claims_rate": {
+      "type": "number",
+      "description": "Fraud/claims flags per 100 shipments, percent"
+    },
+    "packaging_compliance_pct": {
+      "type": "number",
+      "description": "Shipments within max weight policy, percent"
+    },
+    "operational_reliability_pct": {
+      "type": "number",
+      "description": "On-time delivery rate, percent"
+    },
+    "computed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "merchant_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

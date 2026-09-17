@@ -1,0 +1,68 @@
+{
+  "name": "PriceQuote",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "corridor": {
+      "type": "string"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "merchant_price": {
+      "type": "number"
+    },
+    "carrier_compensation": {
+      "type": "number"
+    },
+    "platform_margin": {
+      "type": "number"
+    },
+    "insurance_fee": {
+      "type": "number"
+    },
+    "taxes": {
+      "type": "number"
+    },
+    "reward_points": {
+      "type": "number"
+    },
+    "breakdown": {
+      "type": "object"
+    },
+    "rule_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "shipment_id",
+    "merchant_price"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

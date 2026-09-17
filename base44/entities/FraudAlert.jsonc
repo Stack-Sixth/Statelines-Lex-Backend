@@ -1,0 +1,60 @@
+{
+  "name": "FraudAlert",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "risk_score": {
+      "type": "number"
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "investigating",
+        "resolved",
+        "false_positive"
+      ],
+      "default": "open"
+    },
+    "assigned_to": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_type",
+    "risk_score"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

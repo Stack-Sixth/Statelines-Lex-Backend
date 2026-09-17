@@ -1,0 +1,147 @@
+{
+  "name": "Shipment",
+  "type": "object",
+  "properties": {
+    "tracking_id": {
+      "type": "string"
+    },
+    "merchant_name": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "origin_lat": {
+      "type": "number"
+    },
+    "origin_lng": {
+      "type": "number"
+    },
+    "destination_lat": {
+      "type": "number"
+    },
+    "destination_lng": {
+      "type": "number"
+    },
+    "package_size": {
+      "type": "string",
+      "enum": [
+        "small",
+        "medium",
+        "large",
+        "xl"
+      ]
+    },
+    "weight_kg": {
+      "type": "number"
+    },
+    "service_level": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "express",
+        "same_day",
+        "overnight"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "matched",
+        "picked_up",
+        "in_transit",
+        "at_node",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+        "flagged"
+      ],
+      "default": "pending"
+    },
+    "assigned_carrier_id": {
+      "type": "string"
+    },
+    "smart_node_id": {
+      "type": "string"
+    },
+    "bundle_id": {
+      "type": "string"
+    },
+    "pickup_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivery_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "declared_value": {
+      "type": "number"
+    },
+    "risk_score": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "tracking_id",
+    "origin",
+    "destination",
+    "package_size",
+    "service_level"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "name": "CommunityCarrier",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "current_lat": {
+      "type": "number"
+    },
+    "current_lng": {
+      "type": "number"
+    },
+    "route_origin": {
+      "type": "string"
+    },
+    "route_destination": {
+      "type": "string"
+    },
+    "departure_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "arrival_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "capacity_total_kg": {
+      "type": "number"
+    },
+    "capacity_used_kg": {
+      "type": "number",
+      "default": 0
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "sedan",
+        "suv",
+        "van",
+        "truck",
+        "bike",
+        "walker"
+      ]
+    },
+    "service_levels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rating": {
+      "type": "number",
+      "default": 5
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "assigned",
+        "in_transit",
+        "offline"
+      ],
+      "default": "available"
+    },
+    "total_deliveries": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "route_origin",
+    "route_destination"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "PlatformDelivery",
+  "type": "object",
+  "properties": {
+    "connection_id": {
+      "type": "string"
+    },
+    "connection_name": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "delivered",
+        "failed",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "http_status": {
+      "type": "number"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 1
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "Webhook round-trip time in milliseconds"
+    },
+    "error": {
+      "type": "string"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "connection_id",
+    "event_name",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "RewardEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "delivery_completed",
+        "trip_registered",
+        "referral_qualified",
+        "milestone_achieved",
+        "reward_eligible"
+      ]
+    },
+    "shipment_id": {
+      "type": "string"
+    },
+    "carrier_id": {
+      "type": "string"
+    },
+    "merchant_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

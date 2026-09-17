@@ -1,0 +1,88 @@
+{
+  "name": "ShipmentLifecycleEvent",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "created",
+        "accepted",
+        "merchant_dropoff",
+        "exchange_partner_intake",
+        "bundle_assigned",
+        "carrier_assigned",
+        "in_transit",
+        "arrival",
+        "last_mile_assigned",
+        "delivered",
+        "returned",
+        "cancelled",
+        "exception"
+      ],
+      "description": "Lifecycle stage entered by this transition"
+    },
+    "previous_stage": {
+      "type": "string",
+      "description": "Lifecycle stage this transition moved from"
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": [
+        "engine",
+        "operator",
+        "platform",
+        "carrier",
+        "merchant",
+        "system"
+      ],
+      "default": "operator"
+    },
+    "responsible_entity": {
+      "type": "string",
+      "description": "Entity responsible for the transition (person, platform, or service)"
+    },
+    "note": {
+      "type": "string"
+    },
+    "audit_ref": {
+      "type": "string",
+      "description": "AuditLog entry id backing this transition"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "shipment_id",
+    "stage"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

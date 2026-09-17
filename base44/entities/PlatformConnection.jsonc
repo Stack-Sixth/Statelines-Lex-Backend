@@ -1,0 +1,90 @@
+{
+  "name": "PlatformConnection",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Statelines platform display name"
+    },
+    "platform_type": {
+      "type": "string",
+      "enum": [
+        "ops_center",
+        "exchange",
+        "nodes",
+        "carriers",
+        "merchant",
+        "other"
+      ],
+      "default": "other"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Published app URL, used for health pings"
+    },
+    "webhook_url": {
+      "type": "string",
+      "description": "Full endpoint URL LEX POSTs events to"
+    },
+    "auth_secret": {
+      "type": "string",
+      "description": "Shared secret used to HMAC-sign outbound deliveries"
+    },
+    "enabled_events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Event names to subscribe to; empty means all events"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disabled",
+        "error"
+      ],
+      "default": "disabled"
+    },
+    "last_delivery_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_delivery_status": {
+      "type": "string"
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "platform_type",
+    "base_url"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

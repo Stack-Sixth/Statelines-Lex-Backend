@@ -1,0 +1,68 @@
+{
+  "name": "ManualOverride",
+  "type": "object",
+  "properties": {
+    "override_type": {
+      "type": "string",
+      "enum": [
+        "carrier",
+        "bundle",
+        "route",
+        "pricing",
+        "node_recommendation"
+      ]
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Shipment, bundle, or rule record the override applies to"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Mandatory justification for the override"
+    },
+    "operator_id": {
+      "type": "string"
+    },
+    "operator_name": {
+      "type": "string"
+    },
+    "original_decision": {
+      "type": "object",
+      "description": "The engine decision being replaced"
+    },
+    "replacement_decision": {
+      "type": "object",
+      "description": "The operator's replacement decision"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "override_type",
+    "reason"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

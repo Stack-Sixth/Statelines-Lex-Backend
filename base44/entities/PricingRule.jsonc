@@ -1,0 +1,89 @@
+{
+  "name": "PricingRule",
+  "type": "object",
+  "properties": {
+    "corridor": {
+      "type": "string",
+      "description": "ORIGIN|DEST corridor key, or 'any' for the default rule"
+    },
+    "service_level": {
+      "type": "string",
+      "enum": [
+        "any",
+        "standard",
+        "express",
+        "same_day",
+        "overnight"
+      ],
+      "default": "any"
+    },
+    "base_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "per_kg": {
+      "type": "number",
+      "default": 0
+    },
+    "per_km": {
+      "type": "number",
+      "default": 0
+    },
+    "insurance_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "platform_margin_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "carrier_share_pct": {
+      "type": "number",
+      "default": 70
+    },
+    "priority_multiplier": {
+      "type": "number",
+      "default": 1.3
+    },
+    "reward_points_per_dollar": {
+      "type": "number",
+      "default": 1
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "base_rate"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

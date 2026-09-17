@@ -1,0 +1,88 @@
+{
+  "name": "OrchestrationTask",
+  "type": "object",
+  "properties": {
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "webhook_redeliver",
+        "event_publish"
+      ],
+      "description": "Internal operation the queue executes"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Task inputs (event name, payload, connection id, etc.)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "retrying",
+        "cancelled",
+        "prioritized"
+      ],
+      "default": "queued"
+    },
+    "priority": {
+      "type": "number",
+      "default": 5,
+      "description": "1 = highest urgency"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "max_retries": {
+      "type": "number",
+      "default": 3
+    },
+    "scheduled_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failure_reason": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object",
+      "description": "Execution output on completion"
+    }
+  },
+  "required": [
+    "task_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

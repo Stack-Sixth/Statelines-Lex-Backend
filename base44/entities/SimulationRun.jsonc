@@ -1,0 +1,78 @@
+{
+  "name": "SimulationRun",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Simulation label"
+    },
+    "scenario_type": {
+      "type": "string",
+      "enum": [
+        "additional_carriers",
+        "carrier_unavailable",
+        "corridor_disruption",
+        "pricing_change",
+        "bundle_threshold",
+        "volume_increase",
+        "custom"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "description": "Scenario inputs (counts, corridors, percentages)"
+    },
+    "baseline": {
+      "type": "object",
+      "description": "Production snapshot the simulation was computed against"
+    },
+    "projected_impact": {
+      "type": "object",
+      "description": "Projected delivery time, bundle efficiency, capacity, revenue, margin, carbon"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Modeling assumptions applied"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "failed"
+      ],
+      "default": "completed"
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "scenario_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

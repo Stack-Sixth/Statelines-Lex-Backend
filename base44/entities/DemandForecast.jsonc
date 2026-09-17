@@ -1,0 +1,61 @@
+{
+  "name": "DemandForecast",
+  "type": "object",
+  "properties": {
+    "corridor": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "period": {
+      "type": "string"
+    },
+    "predicted_volume": {
+      "type": "number"
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "trend": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "stable",
+        "declining"
+      ]
+    },
+    "peak_window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "corridor",
+    "predicted_volume"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

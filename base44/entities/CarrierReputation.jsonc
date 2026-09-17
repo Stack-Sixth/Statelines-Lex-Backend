@@ -1,0 +1,74 @@
+{
+  "name": "CarrierReputation",
+  "type": "object",
+  "properties": {
+    "carrier_id": {
+      "type": "string",
+      "description": "CommunityCarrier id"
+    },
+    "carrier_name": {
+      "type": "string"
+    },
+    "completion_rate": {
+      "type": "number",
+      "description": "Delivered / assigned shipments, percent"
+    },
+    "on_time_performance": {
+      "type": "number",
+      "description": "Deliveries at or before deadline, percent"
+    },
+    "acceptance_rate": {
+      "type": "number",
+      "description": "Matched shipments the carrier picked up, percent"
+    },
+    "incident_rate": {
+      "type": "number",
+      "description": "Incidents per 10 deliveries"
+    },
+    "claims_rate": {
+      "type": "number",
+      "description": "Fraud/claims flags per 100 assigned shipments"
+    },
+    "bundle_performance": {
+      "type": "number",
+      "description": "Average estimated savings of the carrier's bundles, percent"
+    },
+    "reliability_score": {
+      "type": "number",
+      "description": "Composite 0-100 operational score exposed to matching"
+    },
+    "deliveries_sampled": {
+      "type": "number",
+      "description": "Delivered shipments the score is based on"
+    },
+    "computed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "carrier_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

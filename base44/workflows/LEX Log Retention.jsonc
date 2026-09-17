@@ -1,0 +1,48 @@
+{
+  "description": "Daily purge of log entities (EventLog, AuditLog, PlatformDelivery, DeadLetterEvent) older than the retention window to prevent unbounded growth.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_log_retention",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_retention": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexLogRetention",
+            "args": {
+              "retention_days": 90,
+              "max_per_entity": 5000
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run log retention purge",
+            "description": "Daily 3am, 90-day window"
+          }
+        }
+      }
+    ]
+  },
+  "name": "LEX Log Retention",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 3 * * *",
+      "one_time_date": null,
+      "timezone": "Africa/Lagos",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

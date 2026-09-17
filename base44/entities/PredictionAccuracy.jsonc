@@ -1,0 +1,72 @@
+{
+  "name": "PredictionAccuracy",
+  "type": "object",
+  "properties": {
+    "prediction_type": {
+      "type": "string",
+      "enum": [
+        "eta",
+        "demand_forecast",
+        "bundle_efficiency",
+        "matching",
+        "pricing"
+      ]
+    },
+    "samples": {
+      "type": "number",
+      "description": "Records the accuracy measurement covered"
+    },
+    "accuracy_pct": {
+      "type": "number",
+      "description": "Prediction accuracy score for the window"
+    },
+    "mean_error": {
+      "type": "number",
+      "description": "Mean absolute error in the type's natural unit"
+    },
+    "mean_error_pct": {
+      "type": "number"
+    },
+    "window_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "details": {
+      "type": "object",
+      "description": "Measurement notes and component metrics"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "prediction_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

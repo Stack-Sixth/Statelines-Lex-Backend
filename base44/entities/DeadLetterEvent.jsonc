@@ -1,0 +1,73 @@
+{
+  "name": "DeadLetterEvent",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "EventLog id of the undeliverable event"
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "target_connection_id": {
+      "type": "string",
+      "description": "PlatformConnection the event could not reach"
+    },
+    "target_platform": {
+      "type": "string",
+      "description": "Platform display name at time of failure"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Original event payload, preserved for replay"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "failure_reason": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "held",
+        "replayed",
+        "archived"
+      ],
+      "default": "held"
+    },
+    "last_attempt_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

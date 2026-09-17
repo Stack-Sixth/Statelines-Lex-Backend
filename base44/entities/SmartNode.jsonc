@@ -1,0 +1,67 @@
+{
+  "name": "SmartNode",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "locker",
+        "hub",
+        "partner_shop",
+        "relay_point"
+      ]
+    },
+    "capacity_total": {
+      "type": "number"
+    },
+    "capacity_used": {
+      "type": "number",
+      "default": 0
+    },
+    "hours_of_operation": {
+      "type": "string"
+    },
+    "service_radius_km": {
+      "type": "number"
+    },
+    "utilization_score": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "address",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "LEX Fraud Analysis",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 2 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Runs the existing fraud detection scan across shipments and carriers daily",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_fraud_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "scan_fraud": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexDetectFraud",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run fraud analysis",
+            "description": "Fraud detection scan"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "SmartBundle",
+  "type": "object",
+  "properties": {
+    "bundle_id": {
+      "type": "string"
+    },
+    "shipment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "carrier_id": {
+      "type": "string"
+    },
+    "total_weight_kg": {
+      "type": "number"
+    },
+    "stops": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "optimized_route": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "forming",
+        "active",
+        "in_transit",
+        "completed"
+      ],
+      "default": "forming"
+    },
+    "estimated_savings_pct": {
+      "type": "number"
+    },
+    "carbon_savings_kg": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "bundle_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

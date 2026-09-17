@@ -1,0 +1,45 @@
+{
+  "name": "LEX ETA Recalculation",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 */6 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Recalculates shipment ETAs every 6 hours using the existing LEX ETA engine",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_eta_recalculation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "recalc_eta": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexEstimateETA",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Recalculate ETAs",
+            "description": "LEX ETA engine"
+          }
+        }
+      }
+    ]
+  }
+}

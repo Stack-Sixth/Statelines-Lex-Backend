@@ -1,0 +1,101 @@
+{
+  "name": "OperationalRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable rule name"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "carrier_eligibility",
+        "package_size_limit",
+        "weight_limit",
+        "merchant_restriction",
+        "corridor_restriction",
+        "transport_mode_restriction",
+        "insurance_threshold",
+        "max_declared_value",
+        "signature_requirement",
+        "reward_rule",
+        "routing_priority",
+        "service_level_priority",
+        "pricing",
+        "demand_pricing",
+        "capacity_pricing",
+        "promotional_pricing",
+        "merchant_pricing",
+        "enterprise_pricing",
+        "corridor_override",
+        "other"
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Rule configuration values (thresholds, lists, weights)"
+    },
+    "priority": {
+      "type": "number",
+      "default": 100,
+      "description": "Evaluation order; lower number = higher priority"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Incremented on every edit"
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Previous versions: version, name, rule_type, parameters, priority, enabled, effective_date, expiration_date, changed_at, changed_by"
+    },
+    "description": {
+      "type": "string"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Administrator who last edited the rule"
+    }
+  },
+  "required": [
+    "name",
+    "rule_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

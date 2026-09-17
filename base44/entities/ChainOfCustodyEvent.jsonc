@@ -1,0 +1,78 @@
+{
+  "name": "ChainOfCustodyEvent",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "created",
+        "matched",
+        "picked_up",
+        "deposited_at_node",
+        "bundled",
+        "in_transit",
+        "transfer",
+        "out_for_delivery",
+        "delivered",
+        "exception"
+      ]
+    },
+    "location": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "actor_name": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "shipment_id",
+    "event_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

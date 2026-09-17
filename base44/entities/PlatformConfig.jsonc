@@ -1,0 +1,71 @@
+{
+  "name": "PlatformConfig",
+  "type": "object",
+  "properties": {
+    "config_key": {
+      "type": "string",
+      "description": "Unique setting key, e.g. transport_modes"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "corridors",
+        "service_levels",
+        "package_categories",
+        "transport_modes",
+        "smart_node_types",
+        "exchange_partner_types",
+        "carrier_categories",
+        "reward_settings",
+        "other"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable setting name"
+    },
+    "values": {
+      "type": "object",
+      "description": "Setting payload \u2014 item lists or key/value settings"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Incremented on every change"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Administrator who last changed the setting"
+    }
+  },
+  "required": [
+    "config_key",
+    "category",
+    "values"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

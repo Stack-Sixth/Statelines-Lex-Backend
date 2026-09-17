@@ -1,0 +1,126 @@
+{
+  "name": "Decision",
+  "type": "object",
+  "properties": {
+    "decision_type": {
+      "type": "string",
+      "enum": [
+        "shipment_matching",
+        "bundle_optimization",
+        "route_optimization",
+        "node_recommendation",
+        "pricing",
+        "eta_estimation",
+        "fraud_detection",
+        "demand_forecast",
+        "reward_publication",
+        "wallet_publication",
+        "platform_sync",
+        "override",
+        "capacity_planning",
+        "lifecycle_transition",
+        "recommendation",
+        "other"
+      ],
+      "description": "Engine subsystem that produced the decision"
+    },
+    "shipment_id": {
+      "type": "string",
+      "description": "Related shipment record"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "inputs_evaluated": {
+      "type": "object",
+      "description": "Snapshot of inputs the engine evaluated"
+    },
+    "rules_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Rules or services applied to reach the decision"
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "description": "AI recommendation, when a model was consulted"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0-1 confidence score"
+    },
+    "final_decision": {
+      "type": "object",
+      "description": "The decision outcome and its data"
+    },
+    "decision_source": {
+      "type": "string",
+      "enum": [
+        "rules",
+        "ai",
+        "manual_override"
+      ],
+      "default": "rules",
+      "description": "What produced the final decision"
+    },
+    "recommendation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "ignored"
+      ],
+      "default": "pending",
+      "description": "Operator disposition of an AI recommendation"
+    },
+    "processing_ms": {
+      "type": "number",
+      "description": "Time spent producing the decision"
+    },
+    "summary": {
+      "type": "string",
+      "description": "One-line human-readable decision summary"
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Alternative recommendations with contributing factors"
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Why this decision was made"
+    },
+    "correlation_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

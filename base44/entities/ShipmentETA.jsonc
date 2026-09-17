@@ -1,0 +1,63 @@
+{
+  "name": "ShipmentETA",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "pickup_eta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "carrier_arrival_eta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "node_eta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivery_eta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "factors": {
+      "type": "object"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.8
+    }
+  },
+  "required": [
+    "shipment_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

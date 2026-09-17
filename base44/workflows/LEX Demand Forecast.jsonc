@@ -1,0 +1,45 @@
+{
+  "name": "LEX Demand Forecast",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 4 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Generates corridor demand forecasts daily using the existing forecast engine",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_demand_forecast",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_forecast": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexForecastDemand",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Generate demand forecast",
+            "description": "Forecast engine"
+          }
+        }
+      }
+    ]
+  }
+}

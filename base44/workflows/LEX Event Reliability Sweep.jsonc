@@ -1,0 +1,47 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_event_reliability_sweep",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_retry_pass": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexEventReliability",
+            "args": {
+              "op": "retry"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run retry pass",
+            "description": "Backoff retries + DLQ promotion"
+          }
+        }
+      }
+    ]
+  },
+  "name": "LEX Event Reliability Sweep",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 */3 * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Runs the existing retry pass every 3 hours \u2014 re-attempts failed webhook deliveries past backoff and promotes exhausted ones to the dead-letter queue"
+}

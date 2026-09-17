@@ -1,0 +1,85 @@
+{
+  "name": "Policy",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable policy name"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": [
+        "max_package_weight",
+        "max_package_value",
+        "chain_of_custody",
+        "identity_verification",
+        "escalation_threshold",
+        "fraud_escalation",
+        "package_inspection",
+        "other"
+      ]
+    },
+    "standard": {
+      "type": "object",
+      "description": "The operational standard the policy enforces"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "retired"
+      ],
+      "default": "draft"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Current version; incremented on every edit"
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Previous versions: version, standard, status, changed_at"
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Administrator who last edited the policy"
+    }
+  },
+  "required": [
+    "name",
+    "policy_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
