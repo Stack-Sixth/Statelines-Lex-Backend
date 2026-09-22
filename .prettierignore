@@ -2,3 +2,13 @@ node_modules/
 dist/
 package-lock.json
 *.sql
+
+# Legacy Base44 export is maintained separately from the Node backend.
+base44/
+components.json
+docs/lexWebhookReceiver.entry.ts
+eslint.config.js
+jsconfig.json
+postcss.config.js
+tailwind.config.js
+vite.config.js
