@@ -37,20 +37,18 @@ export async function domainReads(app: FastifyInstance, db: Database) {
               ? 'REQUEST_ERROR'
               : 'INTERNAL_ERROR';
     if (status >= 500) req.log.error({ err: error }, 'Domain read failed');
-    return reply
-      .code(status)
-      .send({
-        error: {
-          code,
-          message:
-            error instanceof AppError
-              ? error.message
-              : status < 500
-                ? 'Invalid request'
-                : 'Request failed',
-          correlation_id: req.id,
-        },
-      });
+    return reply.code(status).send({
+      error: {
+        code,
+        message:
+          error instanceof AppError
+            ? error.message
+            : status < 500
+              ? 'Invalid request'
+              : 'Request failed',
+        correlation_id: req.id,
+      },
+    });
   });
   const service = shipmentService(db);
   app.get('/api/v1/shipments', async (req) => {
