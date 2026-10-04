@@ -61,3 +61,120 @@ The operational health endpoint reports worker freshness and dead letters. Accep
 Command, history, outbox and delivery records are retained indefinitely in this release. Add a reviewed retention policy and backups appropriate to business requirements before sustained volume. Preserve idempotency records longer than the maximum replay window.
 
 Do not run the old Base44 shipment writers alongside the new engine for the same shipments. Use a staged cutover and explicit ID mapping. A production data importer is deliberately not included because existing data relationships and deployment credentials have not been validated.
+
+## Domain Platform foundation (2026-10-04)
+
+See current-architecture-audit.md for evidence and migration-plan.md for staged delivery. Existing tables and mutations remain intact; canonical read views do not create a second authority. Dashed edges below describe planned integrations, not completed deployments. This existing ARCHITECTURE.md is retained instead of adding a case-colliding architecture.md.
+
+### 1. Overall architecture
+
+```mermaid
+flowchart TD
+ NOC[NOC Base44] -.-> API[Render API]
+ LEX[LEX Base44] -.-> API
+ Merchant[Merchant Base44] -.-> API
+ Carrier[Carrier Rork via trusted server] -.-> API
+ PUDO[PUDO application] -.-> API
+ API --> DB[(PostgreSQL)]
+ DB --> Worker[Delivery worker]
+ Worker --> Receivers[Configured HTTPS receivers]
+```
+
+### 2. Domain boundaries
+
+```mermaid
+flowchart LR
+ Identity[Identity planned] -. authorizes .-> Shipment[Shipment service]
+ Merchant[Orders planned] -. one to many .-> Shipment
+ LEX[LEX orchestration] --> Shipment
+ Shipment --> Carrier[Carrier and capacity]
+ Carrier -.-> Assignment[Assignment and Trip planned]
+ PUDO[PUDO planned] -.-> Shipment
+ NOC[Operations] --> Shipment
+ Shipment --> Audit[Audit and outbox]
+ Billing[Billing approval] --> Audit
+```
+
+### 3. Shipment creation
+
+```mermaid
+sequenceDiagram
+ participant Client as Trusted app adapter
+ participant API as Legacy mutation API
+ participant DB as PostgreSQL
+ Client->>API: JWT + command_id + shipment input
+ API->>DB: Lock command; validate ownership
+ API->>DB: Transaction: shipment + history + audit + outbox
+ DB-->>API: Commit result
+ API-->>Client: UUID + unchanged tracking_id
+ Client->>API: Canonical GET with UUID or SHP_id
+ API-->>Client: Scoped canonical projection
+```
+
+### 4. LEX routing
+
+```mermaid
+sequenceDiagram
+ participant LEX
+ participant API
+ participant DB
+ LEX->>API: Match command + expected_version
+ API->>DB: Lock shipment and eligible carrier
+ API->>DB: Reserve capacity; increment version; write event
+ DB-->>API: Commit
+ API-->>LEX: Persisted command result
+ Note over LEX,API: Same command retry returns same result
+```
+
+### 5. Carrier responsibility
+
+```mermaid
+flowchart LR
+ Match[Current match] --> Reserve[Reserve carrier capacity]
+ Reserve --> Matched[Shipment matched]
+ Matched --> Pickup[Authorized pickup transition]
+ Matched -. later phase .-> Assignment[Versioned assignment]
+ Assignment -.-> Accept[Carrier acceptance or rejection]
+ Accept -.-> Trip[Independent trip]
+```
+
+### 6. Webhook events
+
+```mermaid
+flowchart LR
+ Tx[Shipment transaction] --> Outbox[(Persisted legacy event)]
+ Outbox --> Router[Existing exact subscription fanout]
+ Router --> Delivery[(One delivery per subscriber)]
+ Delivery --> Receiver[Signed Node webhook]
+ External[External event sources] -. future verified adapters .-> Gateway[Planned ingress receipts and handlers]
+ Gateway -.-> Tx
+```
+
+### 7. Database ownership
+
+```mermaid
+flowchart TD
+ Legacy[(lex physical tables)] --> Shipment[core shipment identity view]
+ Legacy --> Carrier[carrier identity view]
+ Legacy --> Events[integration event identity view]
+ Domains[merchant pudo operations billing audit namespaces] -. later migrations .-> NewTables[Future domain entities]
+ Shipment --> ReadAPI[Authorized services only]
+ Carrier --> ReadAPI
+ Events --> ReadAPI
+```
+
+### 8. Failure and recovery
+
+```mermaid
+flowchart TD
+ Pending[Pending delivery] --> Lease[Token lease and attempt]
+ Lease --> Send[HTTPS send]
+ Send -->|Valid processed ack| Done[Processed]
+ Send -->|Valid accepted ack| Accepted[Await owning client completion]
+ Send -->|Temporary error| Retry[Backoff with jitter]
+ Retry -->|Attempts remain| Lease
+ Retry -->|Exhausted| Dead[Dead letter]
+ Send -->|Permanent error| Dead
+ Dead -->|Audited admin replay same event ID| Pending
+ Lease -->|Worker crash and expired lease| Retry
+```

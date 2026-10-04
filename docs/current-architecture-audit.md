@@ -13,21 +13,21 @@ The active backend is Node 24, TypeScript, Fastify 5, Zod, jose and node-postgre
 Existing public probes: GET `/health/live`, `/health/ready`.
 All other routes require short-lived JWTs:
 
-| Routes under /v1 | Methods | Authorization |
-| --- | --- | --- |
-| /shipments | GET, POST | Role-scoped reads; merchant/operator/admin create |
-| /shipments/:id | GET | Owner merchant, assigned carrier, operator/admin |
-| /shipments/:id/match | POST | Operator/admin |
-| /shipments/:id/transitions | POST | State- and ownership-dependent |
-| /shipments/:id/wallet-approval | POST | Admin |
-| /carriers | GET, POST | Operator/admin |
-| /carriers/:id/schedule | POST | Operator/admin |
-| /destinations | GET, POST | Admin |
-| /destinations/:id/status, /backfill | POST | Admin |
-| /deliveries | GET | Operator/admin |
-| /deliveries/:id/replay | POST | Admin |
-| /deliveries/:id/processed | POST | Platform client owning destination |
-| /operations/health | GET | Operator/admin |
+| Routes under /v1                    | Methods   | Authorization                                     |
+| ----------------------------------- | --------- | ------------------------------------------------- |
+| /shipments                          | GET, POST | Role-scoped reads; merchant/operator/admin create |
+| /shipments/:id                      | GET       | Owner merchant, assigned carrier, operator/admin  |
+| /shipments/:id/match                | POST      | Operator/admin                                    |
+| /shipments/:id/transitions          | POST      | State- and ownership-dependent                    |
+| /shipments/:id/wallet-approval      | POST      | Admin                                             |
+| /carriers                           | GET, POST | Operator/admin                                    |
+| /carriers/:id/schedule              | POST      | Operator/admin                                    |
+| /destinations                       | GET, POST | Admin                                             |
+| /destinations/:id/status, /backfill | POST      | Admin                                             |
+| /deliveries                         | GET       | Operator/admin                                    |
+| /deliveries/:id/replay              | POST      | Admin                                             |
+| /deliveries/:id/processed           | POST      | Platform client owning destination                |
+| /operations/health                  | GET       | Operator/admin                                    |
 
 No inbound webhook route exists in the active HTTP app. No domain Order, Assignment, Trip or PUDO resource endpoint exists. Assignment is currently a shipment-to-carrier reference with reserved capacity, not an independently versioned entity.
 

@@ -79,3 +79,9 @@ docs/                      Push, deployment, API and integration instructions
 ```
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for invariants and operational limits, and [VERIFICATION.md](docs/VERIFICATION.md) for the checks performed on this delivery.
+
+## Domain Platform foundation
+
+The incremental migration is documented in [current architecture audit](docs/current-architecture-audit.md) and [migration plan](docs/migration-plan.md). New authenticated read endpoints under `/api/v1/shipments` and `/api/v1/events` provide canonical identifiers while all `/v1` mutation and webhook contracts remain intact. Migration 002 adds namespaces and identity views only.
+
+See [API contract](docs/api-contract.md), [domain ownership](docs/data-ownership-matrix.md), [deployment guide](docs/deployment-guide.md), and [integration handoffs](docs/integrations/lex.md). Inbound gateway, orders, standalone assignments/trips and external application cutovers are later phases, not enabled by this foundation.
