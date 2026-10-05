@@ -941,3 +941,18 @@ test('unknown weight stays outside Render and direct new shipment validation rem
   assert.equal(await count('commands'), 0);
   assert.equal(await count('outbox'), 0);
 });
+
+test('entered package weight reaches the existing API without leaking source metadata', async () => {
+  const { weight_kg: _weight, ...fields } = shipBody();
+  const source = { ...fields, weight_override_kg: 3.25, weight_source: 'entered' };
+  const before = structuredClone(source);
+  const prepared = prepareLexShipmentWeight(source);
+  assert.ok(prepared.ok);
+  assert.equal(prepared.payload.command_id, source.command_id);
+  assert.equal(prepared.payload.weight_override_kg, undefined);
+  assert.equal(prepared.payload.weight_source, undefined);
+  const response = await call('POST', '/v1/shipments', prepared.payload);
+  assert.equal(response.statusCode, 201, response.body);
+  assert.equal(Number(response.json().weight_kg), 3.25);
+  assert.deepEqual(source, before);
+});
