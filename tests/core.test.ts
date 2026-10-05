@@ -951,7 +951,10 @@ test('entered package weight reaches the existing API without leaking source met
   assert.equal(prepared.payload.command_id, source.command_id);
   assert.equal(prepared.payload.weight_override_kg, undefined);
   assert.equal(prepared.payload.weight_source, undefined);
-  const response = await call('POST', '/v1/shipments', prepared.payload);
+  const response = await call('POST', '/v1/shipments', prepared.payload, {
+    id: 'entered-weight-test-admin',
+    role: 'admin',
+  });
   assert.equal(response.statusCode, 201, response.body);
   assert.equal(Number(response.json().weight_kg), 3.25);
   assert.deepEqual(source, before);
