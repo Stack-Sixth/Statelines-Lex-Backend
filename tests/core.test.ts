@@ -875,7 +875,9 @@ test('disabled domain reads leave legacy commands and webhook fanout operational
     assert.equal(legacyRead.statusCode, 200);
     await destination();
     const legacyConfig = { ...config, domainReadApiEnabled: false };
-    const worker = new DeliveryWorker(db, legacyConfig);
+    const worker = new DeliveryWorker(db, legacyConfig, async () => {
+      throw new Error('Fanout must not send network requests');
+    });
     await worker.fanout();
     assert.equal(await count('deliveries'), 1);
     const event = (
