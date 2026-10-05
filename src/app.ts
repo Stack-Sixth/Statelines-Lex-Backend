@@ -378,6 +378,7 @@ export async function buildApp(db: Database, config: Config) {
       deliveries: totals,
     };
   });
-  await app.register(async (scope) => domainReads(scope, db));
+  if (config.domainReadApiEnabled === true)
+    await app.register(async (scope) => domainReads(scope, db));
   return app;
 }

@@ -23,3 +23,5 @@ No new inbound events are accepted in this phase. /api/v1/webhooks/pudo is plann
 ## Independent migration checklist
 
 Record existing URLs, exact body bytes/header names, authentication and acknowledgment semantics. Distinguish Base44 body-only sha256= from Node timestamped v1= signatures. Preserve existing delivery IDs and deduplication history. Test own/other-actor reads in staging, compare old/new shipment version and tracking values, then opt into new reads. Leave current writes and webhooks configured until the next phase passes source-specific contract tests. Roll back by using existing reads; no database or shared app deployment is required.
+
+Canonical reads require DOMAIN_READ_API_ENABLED=true on the platform API. Initial deployment keeps this flag false; retain the existing /v1 reads until a separately approved rollout.

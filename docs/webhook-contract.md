@@ -17,3 +17,9 @@ base44/shared/lexBridge.ts signs BODY ONLY with `sha256=` and supplies X-LEX-Eve
 ## Planned gateway
 
 Use independent per-source secrets (names to be finalized in Phase 3), X-Statelines-Source/Timestamp/Signature/Event-Id, exact-byte HMAC and bounded timestamps. Validate source route/header agreement and event schema; persist receipts before acknowledging. Route only explicitly permitted events through domain services. Include bounded retries/dead-letter and authorized replay. New signing headers are design targets only; no new secrets are required now.
+
+## Initial rollout feature gate
+
+`DOMAIN_READ_API_ENABLED` defaults to `false` and accepts only `true` or `false`. Keep it unset or false in the initial deployment. The new `/api/v1/shipments` and `/api/v1/events` read routes are registered only when explicitly true; authenticated requests otherwise receive 404. This gate does not change existing `/v1` APIs, command execution, signing, subscriptions, or LEX outbox/worker behavior. New event routing is not implemented or enabled by this foundation.
+
+Enable canonical reads only after staging validation and explicit rollout approval; this merge/deployment leaves them disabled. Roll back the read interface by setting false and restarting the API. Migration 002 only adds namespaces/views and does not switch data authority or webhook transport.

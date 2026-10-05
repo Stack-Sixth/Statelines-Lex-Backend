@@ -7,11 +7,12 @@ import { PGlite } from '@electric-sql/pglite';
 import { SignJWT } from 'jose';
 import { buildApp } from '../src/app.js';
 import { postgres, type Database, type Sql } from '../src/db.js';
-import type { Config, Role } from '../src/config.js';
+import { configFromEnv, type Config, type Role } from '../src/config.js';
 import { DeliveryWorker } from '../src/delivery.js';
 import { publicAddress, signature, verifySignature, validateEndpoint } from '../src/webhooks.js';
 const secret = 'test-only-secret-'.repeat(4);
 const config: Config = {
+  domainReadApiEnabled: true,
   databaseUrl: process.env.TEST_DATABASE_URL || 'postgresql://unused',
   databaseSsl: false,
   poolSize: 5,
@@ -827,4 +828,65 @@ test('canonical endpoints require authentication and do not change legacy errors
   const legacy = await app.inject({ method: 'GET', url: '/v1/shipments' });
   assert.equal(legacy.statusCode, 401);
   assert.equal(typeof legacy.json().error, 'string');
+});
+
+test('domain read feature defaults off and only accepts explicit boolean strings', () => {
+  const env = {
+    DATABASE_URL: 'postgresql://unused',
+    API_CLIENTS_JSON: JSON.stringify(config.clients),
+  };
+  assert.equal(configFromEnv(env).domainReadApiEnabled, false);
+  assert.equal(
+    configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'false' }).domainReadApiEnabled,
+    false,
+  );
+  assert.equal(
+    configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'true' }).domainReadApiEnabled,
+    true,
+  );
+  assert.throws(() => configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'yes' }));
+});
+
+test('disabled domain reads leave legacy commands and webhook fanout operational', async () => {
+  const legacyApp = await buildApp(db, { ...config, domainReadApiEnabled: undefined });
+  try {
+    const headers = { authorization: 'Bearer ' + (await token()) };
+    const created = await legacyApp.inject({
+      method: 'POST',
+      url: '/v1/shipments',
+      headers,
+      payload: shipBody(),
+    });
+    assert.equal(created.statusCode, 201, created.body);
+    for (const url of [
+      '/api/v1/shipments',
+      '/api/v1/shipments/' + created.json().id,
+      '/api/v1/events',
+      '/api/v1/events/' + randomUUID(),
+    ]) {
+      const disabled = await legacyApp.inject({ method: 'GET', url, headers });
+      assert.equal(disabled.statusCode, 404, disabled.body);
+    }
+    const legacyRead = await legacyApp.inject({
+      method: 'GET',
+      url: '/v1/shipments/' + created.json().id,
+      headers,
+    });
+    assert.equal(legacyRead.statusCode, 200);
+    await destination();
+    const legacyConfig = { ...config, domainReadApiEnabled: false };
+    const worker = new DeliveryWorker(db, legacyConfig);
+    await worker.fanout();
+    assert.equal(await count('deliveries'), 1);
+    const event = (
+      await db.query<{ envelope: { schema_version: number; event_type: string; source: string } }>(
+        'SELECT envelope FROM lex.outbox',
+      )
+    ).rows[0]!.envelope;
+    assert.equal(event.schema_version, 1);
+    assert.equal(event.event_type, 'ShipmentCreated');
+    assert.equal(event.source, 'statelines-lex');
+  } finally {
+    await legacyApp.close();
+  }
 });

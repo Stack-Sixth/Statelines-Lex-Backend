@@ -24,3 +24,9 @@ For each phase: migrate a disposable database; run legacy regression and new con
 ## Outstanding tests for later phases
 
 Assignment creation/acceptance, canonical webhook source/signature/duplicate/out-of-order handling, and Merchant → Render → LEX → Carrier → NOC/Merchant network simulation require the corresponding later-phase implementation. Do not describe existing shipment matching as these tests. Current regression tests remain the safety baseline.
+
+## Initial rollout feature gate
+
+`DOMAIN_READ_API_ENABLED` defaults to `false` and accepts only `true` or `false`. Keep it unset or false in the initial deployment. The new `/api/v1/shipments` and `/api/v1/events` read routes are registered only when explicitly true; authenticated requests otherwise receive 404. This gate does not change existing `/v1` APIs, command execution, signing, subscriptions, or LEX outbox/worker behavior. New event routing is not implemented or enabled by this foundation.
+
+Enable canonical reads only after staging validation and explicit rollout approval; this merge/deployment leaves them disabled. Roll back the read interface by setting false and restarting the API. Migration 002 only adds namespaces/views and does not switch data authority or webhook transport.

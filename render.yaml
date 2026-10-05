@@ -11,6 +11,8 @@ services:
     autoDeployTrigger: off
     envVars:
       - fromGroup: lex-secrets
+      - key: DOMAIN_READ_API_ENABLED
+        value: 'false'
       - key: NODE_VERSION
         value: '24'
       - key: NODE_ENV

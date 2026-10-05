@@ -13,3 +13,9 @@ This task does not deploy to production or change external apps. Keep current AP
 Rollback: deploy previous API/worker commit and retain 002's extra schemas/views. No existing table or row changed. Do not drop production objects as an automated rollback. A migration failure rolls back transactionally; investigate and correct a new unapplied migration rather than altering checksummed history.
 
 Canonical read endpoints work from existing tables; schema views provide database-side ID mappings. UUID/public IDs encode identity only and are not access tokens. /health and /health/database aliases are not introduced; existing probes satisfy those roles.
+
+## Initial rollout feature gate
+
+`DOMAIN_READ_API_ENABLED` defaults to `false` and accepts only `true` or `false`. Keep it unset or false in the initial deployment. The new `/api/v1/shipments` and `/api/v1/events` read routes are registered only when explicitly true; authenticated requests otherwise receive 404. This gate does not change existing `/v1` APIs, command execution, signing, subscriptions, or LEX outbox/worker behavior. New event routing is not implemented or enabled by this foundation.
+
+Enable canonical reads only after staging validation and explicit rollout approval; this merge/deployment leaves them disabled. Roll back the read interface by setting false and restarting the API. Migration 002 only adds namespaces/views and does not switch data authority or webhook transport.

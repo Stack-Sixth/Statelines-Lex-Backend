@@ -18,3 +18,9 @@ Shipment fields: id (UUID), shipment_id (SHP_), original tracking_id, merchant_i
 Errors on implemented /api/v1 routes: `{ "error": { "code": "NOT_FOUND", "message": "Shipment not found", "correlation_id": "request ID" } }`. Codes include VALIDATION_ERROR, INVALID_IDENTIFIER, authentication/authorization codes from existing service (uppercase), NOT_FOUND, RATE_LIMIT_EXCEEDED, INTERNAL_ERROR. Correlation is local request ID in this phase; cross-app propagation is not implemented. No raw stack traces.
 
 Legacy /v1 routes, payloads, flat errors and mutation APIs remain unchanged; see API.md. Create/match/transition/approval still use legacy UUIDs and stable command_id. Do not submit a public command ID to a UUID-only legacy route. New /api/v1 mutation/order/carrier/assignment/trip/PUDO and inbound webhook routes are deferred; no empty CRUD placeholders are exposed.
+
+## Initial rollout feature gate
+
+`DOMAIN_READ_API_ENABLED` defaults to `false` and accepts only `true` or `false`. Keep it unset or false in the initial deployment. The new `/api/v1/shipments` and `/api/v1/events` read routes are registered only when explicitly true; authenticated requests otherwise receive 404. This gate does not change existing `/v1` APIs, command execution, signing, subscriptions, or LEX outbox/worker behavior. New event routing is not implemented or enabled by this foundation.
+
+Enable canonical reads only after staging validation and explicit rollout approval; this merge/deployment leaves them disabled. Roll back the read interface by setting false and restarting the API. Migration 002 only adds namespaces/views and does not switch data authority or webhook transport.

@@ -85,3 +85,9 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for invariants and operational limit
 The incremental migration is documented in [current architecture audit](docs/current-architecture-audit.md) and [migration plan](docs/migration-plan.md). New authenticated read endpoints under `/api/v1/shipments` and `/api/v1/events` provide canonical identifiers while all `/v1` mutation and webhook contracts remain intact. Migration 002 adds namespaces and identity views only.
 
 See [API contract](docs/api-contract.md), [domain ownership](docs/data-ownership-matrix.md), [deployment guide](docs/deployment-guide.md), and [integration handoffs](docs/integrations/lex.md). Inbound gateway, orders, standalone assignments/trips and external application cutovers are later phases, not enabled by this foundation.
+
+## Initial rollout feature gate
+
+`DOMAIN_READ_API_ENABLED` defaults to `false` and accepts only `true` or `false`. Keep it unset or false in the initial deployment. The new `/api/v1/shipments` and `/api/v1/events` read routes are registered only when explicitly true; authenticated requests otherwise receive 404. This gate does not change existing `/v1` APIs, command execution, signing, subscriptions, or LEX outbox/worker behavior. New event routing is not implemented or enabled by this foundation.
+
+Enable canonical reads only after staging validation and explicit rollout approval; this merge/deployment leaves them disabled. Roll back the read interface by setting false and restarting the API. Migration 002 only adds namespaces/views and does not switch data authority or webhook transport.
