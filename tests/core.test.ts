@@ -1,3 +1,4 @@
+import { prepareLexShipmentWeight } from '../integrations/lex-shipment-compatibility.js';
 import { internalId, publicId } from '../src/domains/identifiers.js';
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -891,4 +892,52 @@ test('disabled domain reads leave legacy commands and webhook fanout operational
   } finally {
     await legacyApp.close();
   }
+});
+
+test('compatibility mapping reaches existing API with stable command, tracking, shipment ID and versions', async () => {
+  const original = shipBody();
+  const { weight_kg, package_size, ...fields } = original;
+  const source = { ...fields, package: { weight_kg: String(weight_kg), size: package_size } };
+  const prepared = prepareLexShipmentWeight(source);
+  assert.ok(prepared.ok);
+  assert.equal(prepared.payload.command_id, original.command_id);
+  const first = await call('POST', '/v1/shipments', prepared.payload);
+  assert.equal(first.statusCode, 201, first.body);
+  const shipment = first.json();
+  assert.equal(shipment.version, 1);
+  assert.equal(Number(shipment.weight_kg), weight_kg);
+  const retry = await call('POST', '/v1/shipments', prepared.payload);
+  assert.deepEqual(retry.json(), shipment);
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 1);
+  assert.equal(await count('commands'), 1);
+  const canonical = await call('GET', '/api/v1/shipments/' + publicId('shipment', shipment.id));
+  assert.equal(canonical.json().shipment.shipment_id, publicId('shipment', shipment.id));
+  assert.equal(canonical.json().shipment.tracking_id, shipment.tracking_id);
+  const cancelled = await transition(shipment, 'cancelled');
+  assert.equal(cancelled.id, shipment.id);
+  assert.equal(cancelled.tracking_id, shipment.tracking_id);
+  assert.equal(cancelled.version, 2);
+  assert.deepEqual((await call('POST', '/v1/shipments', prepared.payload)).json(), shipment);
+  const changed = await call('POST', '/v1/shipments', { ...prepared.payload, weight_kg: 9 });
+  assert.equal(changed.statusCode, 409);
+  const stale = await call('POST', '/v1/shipments/' + shipment.id + '/transitions', {
+    command_id: randomUUID(),
+    expected_version: 1,
+    status: 'cancelled',
+  });
+  assert.equal(stale.statusCode, 409);
+});
+
+test('unknown weight stays outside Render and direct new shipment validation remains strict', async () => {
+  const { weight_kg: _weight, ...payload } = shipBody();
+  const prepared = prepareLexShipmentWeight(payload);
+  assert.ok(!prepared.ok);
+  assert.equal(prepared.code, 'WEIGHT_REVIEW_REQUIRED');
+  assert.equal(prepared.render_attempted, false);
+  const direct = await call('POST', '/v1/shipments', payload);
+  assert.equal(direct.statusCode, 400);
+  assert.equal(await count('shipments'), 0);
+  assert.equal(await count('commands'), 0);
+  assert.equal(await count('outbox'), 0);
 });
