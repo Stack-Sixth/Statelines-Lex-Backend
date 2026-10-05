@@ -23,11 +23,13 @@ export interface Config {
   pollMs: number;
   batchSize: number;
   maxAttempts: number;
+  domainReadApiEnabled?: boolean;
 }
 export function configFromEnv(env = process.env): Config {
   const raw = z
     .object({
       DATABASE_URL: z.string().url(),
+      DOMAIN_READ_API_ENABLED: z.enum(['true', 'false']).default('false'),
       DATABASE_SSL: z.enum(['true', 'false']).default('true'),
       DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(50).default(5),
       PORT: z.coerce.number().int().min(1).max(65535).default(3000),
@@ -46,6 +48,7 @@ export function configFromEnv(env = process.env): Config {
   if (env.NODE_ENV === 'production' && raw.DATABASE_SSL !== 'true')
     throw Error('Production requires verified database TLS');
   return {
+    domainReadApiEnabled: raw.DOMAIN_READ_API_ENABLED === 'true',
     databaseUrl: raw.DATABASE_URL,
     databaseSsl: raw.DATABASE_SSL === 'true',
     databaseCa: env.DATABASE_CA_CERT,

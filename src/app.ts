@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import { domainReads } from './api/domain-reads.js';
 import rateLimit from '@fastify/rate-limit';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -377,5 +378,7 @@ export async function buildApp(db: Database, config: Config) {
       deliveries: totals,
     };
   });
+  if (config.domainReadApiEnabled === true)
+    await app.register(async (scope) => domainReads(scope, db));
   return app;
 }

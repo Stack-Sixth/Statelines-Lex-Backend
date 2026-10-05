@@ -1,3 +1,4 @@
+import { internalId, publicId } from '../src/domains/identifiers.js';
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -6,11 +7,12 @@ import { PGlite } from '@electric-sql/pglite';
 import { SignJWT } from 'jose';
 import { buildApp } from '../src/app.js';
 import { postgres, type Database, type Sql } from '../src/db.js';
-import type { Config, Role } from '../src/config.js';
+import { configFromEnv, type Config, type Role } from '../src/config.js';
 import { DeliveryWorker } from '../src/delivery.js';
 import { publicAddress, signature, verifySignature, validateEndpoint } from '../src/webhooks.js';
 const secret = 'test-only-secret-'.repeat(4);
 const config: Config = {
+  domainReadApiEnabled: true,
   databaseUrl: process.env.TEST_DATABASE_URL || 'postgresql://unused',
   databaseSsl: false,
   poolSize: 5,
@@ -141,7 +143,9 @@ before(async () => {
     if (!url.pathname.endsWith('/lex_test'))
       throw Error('Tests only accept a disposable database named lex_test');
     db = postgres(config);
-    await db.query('DROP SCHEMA IF EXISTS lex CASCADE');
+    await db.query(
+      'DROP SCHEMA IF EXISTS core, merchant, carrier, pudo, operations, billing, audit, integration, lex CASCADE',
+    );
   } else {
     const pg = new PGlite();
     await pg.waitReady;
@@ -163,6 +167,7 @@ before(async () => {
     };
   }
   await db.query(await readFile('migrations/001_core.sql', 'utf8'));
+  await db.query(await readFile('migrations/002_domain_foundation.sql', 'utf8'));
   app = await buildApp(db, config);
 });
 after(async () => {
@@ -713,5 +718,177 @@ test('database RLS prevents a browser role from directly writing engine tables',
     });
   } finally {
     await db.query('DROP OWNED BY lex_browser_test; DROP ROLE lex_browser_test;');
+  }
+});
+
+test('canonical IDs round-trip full UUIDs and reject wrong entity prefixes', () => {
+  const id = randomUUID();
+  assert.equal(internalId('shipment', publicId('shipment', id)), id);
+  assert.equal(internalId('shipment', id.toUpperCase()), id);
+  assert.throws(() => internalId('shipment', publicId('carrier', id)));
+  assert.throws(() => internalId('shipment', 'SHP_123'));
+});
+
+test('canonical reads preserve legacy IDs, ownership and unchanged command retry results', async () => {
+  const body = shipBody();
+  const original = await call('POST', '/v1/shipments', body);
+  const s = original.json();
+  const id = publicId('shipment', s.id);
+  const r = await call('GET', '/api/v1/shipments/' + id);
+  assert.equal(r.statusCode, 200, r.body);
+  const projection = r.json().shipment;
+  assert.equal(projection.shipment_id, id);
+  assert.equal(projection.tracking_id, s.tracking_id);
+  assert.equal(projection.version, 1);
+  assert.equal(projection.merchant_id, null);
+  assert.equal(projection.order_id, null);
+  assert.equal(projection.origin.corridor, 'lagos');
+  assert.equal(projection.capacity_reserved, undefined);
+  assert.deepEqual((await call('GET', '/api/v1/shipments/' + s.id)).json(), r.json());
+  const denied = await call('GET', '/api/v1/shipments/' + id, undefined, {
+    id: 'other',
+    role: 'merchant',
+  });
+  assert.equal(denied.statusCode, 404);
+  assert.equal(denied.json().error.code, 'NOT_FOUND');
+  const own = await call('GET', '/api/v1/shipments/' + id, undefined, {
+    id: 'merchant-1',
+    role: 'merchant',
+  });
+  assert.equal(own.statusCode, 200);
+  const repeated = await call('POST', '/v1/shipments', body);
+  assert.deepEqual(repeated.json(), s);
+  const view = (
+    await db.query<{ public_id: string; tracking_id: string }>(
+      'SELECT public_id,tracking_id FROM core.shipment_identifiers WHERE id=$1',
+      [s.id],
+    )
+  ).rows[0]!;
+  assert.equal(view.public_id, id);
+  assert.equal(view.tracking_id, s.tracking_id);
+});
+
+test('canonical pagination is bounded, role scoped and has reusable cursors', async () => {
+  await createShipment();
+  await createShipment();
+  await createShipment({ owner_user_id: 'other' });
+  const actor = { id: 'merchant-1', role: 'merchant' as Role };
+  const first = await call('GET', '/api/v1/shipments?limit=1', undefined, actor);
+  assert.equal(first.statusCode, 200);
+  assert.equal(first.json().items.length, 1);
+  assert.ok(first.json().next_cursor);
+  const second = await call(
+    'GET',
+    '/api/v1/shipments?limit=1&after=' + first.json().next_cursor,
+    undefined,
+    actor,
+  );
+  assert.equal(second.json().items.length, 1);
+  assert.equal(second.json().next_cursor, null);
+  assert.notEqual(first.json().items[0].id, second.json().items[0].id);
+  assert.equal((await call('GET', '/api/v1/shipments?limit=101')).statusCode, 400);
+  assert.equal(
+    (await call('GET', '/api/v1/shipments/CAR_123')).json().error.code,
+    'INVALID_IDENTIFIER',
+  );
+});
+
+test('canonical events project persisted outbox without changing legacy delivery data', async () => {
+  const s = await matched();
+  const before = (await db.query('SELECT envelope FROM lex.outbox ORDER BY id')).rows;
+  const result = await call('GET', '/api/v1/events?limit=1');
+  assert.equal(result.statusCode, 200, result.body);
+  assert.ok(result.json().next_cursor);
+  const all = await call('GET', '/api/v1/events');
+  const events = all.json().items;
+  assert.deepEqual(events.map((e: { event_type: string }) => e.event_type).sort(), [
+    'shipment.assigned',
+    'shipment.created',
+  ]);
+  for (const e of events) {
+    assert.equal(e.entity.id, publicId('shipment', s.id));
+    assert.equal(e.event_id, publicId('event', e.legacy_event_id));
+    const single = await call('GET', '/api/v1/events/' + e.event_id);
+    assert.deepEqual(single.json(), e);
+  }
+  assert.deepEqual((await db.query('SELECT envelope FROM lex.outbox ORDER BY id')).rows, before);
+  const denied = await call('GET', '/api/v1/events', undefined, {
+    id: 'merchant-1',
+    role: 'merchant',
+  });
+  assert.equal(denied.statusCode, 403);
+  assert.equal(denied.json().error.code, 'FORBIDDEN');
+  assert.equal((await call('GET', '/api/v1/events/' + randomUUID())).statusCode, 404);
+});
+
+test('canonical endpoints require authentication and do not change legacy errors', async () => {
+  const unauthenticated = await app.inject({ method: 'GET', url: '/api/v1/shipments' });
+  assert.equal(unauthenticated.statusCode, 401);
+  assert.equal(typeof unauthenticated.json().error.code, 'string');
+  const legacy = await app.inject({ method: 'GET', url: '/v1/shipments' });
+  assert.equal(legacy.statusCode, 401);
+  assert.equal(typeof legacy.json().error, 'string');
+});
+
+test('domain read feature defaults off and only accepts explicit boolean strings', () => {
+  const env = {
+    DATABASE_URL: 'postgresql://unused',
+    API_CLIENTS_JSON: JSON.stringify(config.clients),
+  };
+  assert.equal(configFromEnv(env).domainReadApiEnabled, false);
+  assert.equal(
+    configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'false' }).domainReadApiEnabled,
+    false,
+  );
+  assert.equal(
+    configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'true' }).domainReadApiEnabled,
+    true,
+  );
+  assert.throws(() => configFromEnv({ ...env, DOMAIN_READ_API_ENABLED: 'yes' }));
+});
+
+test('disabled domain reads leave legacy commands and webhook fanout operational', async () => {
+  const legacyApp = await buildApp(db, { ...config, domainReadApiEnabled: undefined });
+  try {
+    const headers = { authorization: 'Bearer ' + (await token()) };
+    const created = await legacyApp.inject({
+      method: 'POST',
+      url: '/v1/shipments',
+      headers,
+      payload: shipBody(),
+    });
+    assert.equal(created.statusCode, 201, created.body);
+    for (const url of [
+      '/api/v1/shipments',
+      '/api/v1/shipments/' + created.json().id,
+      '/api/v1/events',
+      '/api/v1/events/' + randomUUID(),
+    ]) {
+      const disabled = await legacyApp.inject({ method: 'GET', url, headers });
+      assert.equal(disabled.statusCode, 404, disabled.body);
+    }
+    const legacyRead = await legacyApp.inject({
+      method: 'GET',
+      url: '/v1/shipments/' + created.json().id,
+      headers,
+    });
+    assert.equal(legacyRead.statusCode, 200);
+    await destination();
+    const legacyConfig = { ...config, domainReadApiEnabled: false };
+    const worker = new DeliveryWorker(db, legacyConfig, async () => {
+      throw new Error('Fanout must not send network requests');
+    });
+    await worker.fanout();
+    assert.equal(await count('deliveries'), 1);
+    const event = (
+      await db.query<{ envelope: { schema_version: number; event_type: string; source: string } }>(
+        'SELECT envelope FROM lex.outbox',
+      )
+    ).rows[0]!.envelope;
+    assert.equal(event.schema_version, 1);
+    assert.equal(event.event_type, 'ShipmentCreated');
+    assert.equal(event.source, 'statelines-lex');
+  } finally {
+    await legacyApp.close();
   }
 });
