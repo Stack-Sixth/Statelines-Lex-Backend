@@ -6,18 +6,15 @@ The deliverable implements the operational backend described in ARCHITECTURE.md.
 
 ## Checks
 
-- TypeScript strict checking and production compilation.
-- Automated API/database/worker tests using PGlite (an embedded PostgreSQL engine).
-- Fault injection verifies transaction rollback when outbox or receiver storage fails.
-- Repeat-command, state-transition, carrier-identity, capacity, wallet-approval, retry-limit, replay, abandoned-lease and backlog tests.
-- Receiver signature and duplicate-content checks.
-- Formatting validation and dependency audit.
+For the Merchant integration change, TypeScript strict checking (`npm run typecheck`) passed, production compilation (`npm run build`) passed, and Prettier checks passed for all changed source/config/documentation files. `git diff --check` reported no whitespace errors.
 
-Result: 26 tests passed, zero failed. Formatting validation, strict TypeScript checking and the production build passed. npm reported zero dependency vulnerabilities after installation. Tests use synthetic records and fake webhook transports, not real sibling applications.
+The full `npm test` run did not complete in this environment. The seven standalone LEX weight-compatibility tests passed, then Node cancelled `tests/core.test.ts` after about 138 seconds with `Promise resolution is still pending but the event loop has already resolved`. Its `before` hook awaits PGlite startup; the core suite produced no test results, so the new Merchant integration tests are unverified here. The earlier 26-test result applied to the pre-Merchant baseline only and must not be treated as verification of this change.
+
+Tests use synthetic records and fake webhook transports, not real sibling applications. No live production mutation or deployment test was performed.
 
 ## Remaining deployment verification
 
-Real multi-connection PostgreSQL tests could not be run locally: native PostgreSQL shared-memory setup was blocked by the sandbox, and Docker's daemon was not running. PGlite serializes transactions, so local Promise.all tests do not independently prove real concurrent row locking. GitHub Actions is configured to run the same suite against PostgreSQL 17; require it to pass before deployment.
+The Merchant implementation is not ready for Render deployment until the full test suite completes successfully in a working PGlite or disposable PostgreSQL 17 environment. Real multi-connection PostgreSQL tests are still required to prove row-lock concurrency; PGlite serializes transactions. GitHub Actions is configured to run the suite against PostgreSQL 17; require it to pass before deployment.
 
 The Base44 server adapter must be installed and tested in the user's actual workspace. Supabase TLS, Render builds and worker startup, real HTTPS receivers, platform business consumers and production ID/data migration require staging verification. No such live verification is claimed.
 

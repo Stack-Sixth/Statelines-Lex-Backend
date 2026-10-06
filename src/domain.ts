@@ -153,6 +153,7 @@ export async function emit(
   shipment: Pick<Shipment, 'id' | 'version'>,
   commandId: string,
   payload: unknown,
+  correlationId?: string,
 ) {
   const id = randomUUID();
   const envelope = {
@@ -161,7 +162,7 @@ export async function emit(
     schema_version: 1,
     source: 'statelines-lex',
     occurred_at: new Date().toISOString(),
-    correlation_id: shipment.id,
+    correlation_id: correlationId || shipment.id,
     causation_id: commandId,
     aggregate: { type: 'shipment', id: shipment.id, version: shipment.version },
     payload,
