@@ -44,7 +44,8 @@ export async function buildApp(db: Database, config: Config) {
   });
   app.decorateRequest('actor');
   app.addHook('onRequest', async (req) => {
-    if (req.url === '/health/live' || req.url === '/health/ready') return;
+    const route = req.routeOptions.url;
+    if (req.method === 'GET' && (route === '/health/live' || route === '/health/ready')) return;
     req.actor = await authenticate(req.headers.authorization, config);
   });
   await app.register(rateLimit, {

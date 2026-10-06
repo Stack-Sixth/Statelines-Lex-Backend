@@ -1264,10 +1264,13 @@ test('Merchant cannot cancel collected/delivered shipments; cancellation gate is
   }
 });
 
-test('public health remains public and legacy APIs keep their existing auth contract', async () => {
+test('only GET health routes are public; root, LEX and domain APIs require authentication', async () => {
   assert.equal((await app.inject({ method: 'GET', url: '/health/live' })).statusCode, 200);
   assert.equal((await app.inject({ method: 'GET', url: '/health/ready' })).statusCode, 200);
+  assert.equal((await app.inject({ method: 'GET', url: '/' })).statusCode, 401);
   assert.equal((await app.inject({ method: 'GET', url: '/v1/shipments' })).statusCode, 401);
+  assert.equal((await app.inject({ method: 'GET', url: '/api/v1/shipments' })).statusCode, 401);
+  assert.equal((await app.inject({ method: 'POST', url: '/health/live' })).statusCode, 401);
   const oldCreate = await call('POST', '/v1/shipments', shipBody());
   assert.equal(oldCreate.statusCode, 201, oldCreate.body);
 });
