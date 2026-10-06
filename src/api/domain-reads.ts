@@ -101,7 +101,10 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
     actor: { role: string; clientId: string },
     reference: Record<string, unknown> | undefined,
   ) => {
-    if (actor.role === 'merchant' && (!reference || reference.merchant_id !== actor.clientId))
+    // Legacy shipments have no Merchant reference; shipmentService.get has
+    // already enforced their owner_user_id. When a reference exists, enforce
+    // its stronger merchant-client boundary.
+    if (actor.role === 'merchant' && reference && reference.merchant_id !== actor.clientId)
       throw new AppError(404, 'not_found', 'Shipment not found');
   };
   app.get('/api/v1/capabilities', async () => ({
@@ -119,7 +122,7 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
         req.actor.role === 'merchant'
           ? (
               await db.query(
-                'SELECT s.* FROM lex.shipments s JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id WHERE r.merchant_id=$1 AND s.owner_user_id=$2 AND ($3::uuid IS NULL OR s.id>$3) ORDER BY s.id LIMIT $4',
+                'SELECT s.* FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id WHERE s.owner_user_id=$2 AND (r.shipment_id IS NULL OR r.merchant_id=$1) AND ($3::uuid IS NULL OR s.id>$3) ORDER BY s.id LIMIT $4',
                 [req.actor.clientId, req.actor.id, after || null, q.limit + 1],
               )
             ).rows

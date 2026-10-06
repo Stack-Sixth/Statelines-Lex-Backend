@@ -196,6 +196,9 @@ after(async () => {
   await db?.close();
 });
 beforeEach(async () => {
+  // Keep Fastify's in-memory rate-limit bucket isolated per test case.
+  await app?.close();
+  app = await buildApp(db, config);
   await db.query(
     'TRUNCATE lex.delivery_attempts,lex.deliveries,lex.destinations,lex.outbox,lex.audit_log,lex.wallet_approvals,lex.shipment_history,lex.shipments,lex.carriers,lex.commands,lex.worker_heartbeats CASCADE',
   );
