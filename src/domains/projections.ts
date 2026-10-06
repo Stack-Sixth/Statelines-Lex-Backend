@@ -1,13 +1,18 @@
 import { publicId } from './identifiers.js';
 
 /** Explicit fields keep internal capacity/accounting details out of the new contract. */
-export function shipmentProjection(s: Record<string, unknown>) {
+export function shipmentProjection(
+  s: Record<string, unknown>,
+  merchantReference?: Record<string, unknown>,
+) {
   return {
     id: s.id,
     shipment_id: publicId('shipment', s.id as string),
     tracking_id: s.tracking_id,
-    merchant_id: null,
-    order_id: null,
+    merchant_id: merchantReference?.merchant_id || null,
+    order_id: merchantReference?.order_id || null,
+    external_shipment_id: merchantReference?.external_shipment_id || null,
+    correlation_id: merchantReference?.correlation_id || null,
     origin: { corridor: s.origin },
     destination: { corridor: s.destination },
     status: s.status,
@@ -32,10 +37,15 @@ export const eventNames: Record<string, string> = {
 };
 export function eventProjection(e: Record<string, unknown>) {
   const aggregate = e.aggregate as { type: string; id: string; version: number };
+  const payload = e.payload as { status?: string } | undefined;
+  const eventType =
+    e.event_type === 'ShipmentStatusChanged' && payload?.status === 'cancelled'
+      ? 'shipment.cancelled'
+      : eventNames[e.event_type as string];
   return {
     event_id: publicId('event', e.event_id as string),
     legacy_event_id: e.event_id,
-    event_type: eventNames[e.event_type as string],
+    event_type: eventType,
     event_version: 1,
     occurred_at: e.occurred_at,
     source: 'statelines-domain-platform',

@@ -84,8 +84,8 @@ flowchart TD
 
 ```mermaid
 flowchart LR
- Identity[Identity planned] -. authorizes .-> Shipment[Shipment service]
- Merchant[Orders planned] -. one to many .-> Shipment
+Identity[Identity planned] -. authorizes .-> Shipment[Shipment service]
+Merchant[Merchant-owned Order] -->|external reference, gated API| Shipment
  LEX[LEX orchestration] --> Shipment
  Shipment --> Carrier[Carrier and capacity]
  Carrier -.-> Assignment[Assignment and Trip planned]
@@ -94,6 +94,12 @@ flowchart LR
  Shipment --> Audit[Audit and outbox]
  Billing[Billing approval] --> Audit
 ```
+
+### Merchant shipment handoff
+
+Merchant remains authoritative for its commercial Order. Render accepts an authenticated Merchant logistics request at `POST /api/v1/shipments`, creates the canonical Shipment, and stores a unique Merchant/order reference in `lex.merchant_shipment_refs`. It does not create or own an Order aggregate. The verified JWT issuer binds `merchant_id`; the verified subject becomes the Shipment owner. Until organization memberships exist, Merchant shipment reads and cancellation are limited to that subject within the issuer's merchant scope.
+
+Shipment creation uses the existing command transaction and writes the Shipment, reference, history, audit record, and legacy-compatible `ShipmentCreated` outbox envelope atomically. Merchant cancellation is a separate `expected_version` command that permits only `created` and `matched`; it releases any reservation in the same transaction and emits the existing physical `ShipmentStatusChanged` type. Canonical reads project that event as `shipment.cancelled`. `DOMAIN_READ_API_ENABLED` and `MERCHANT_DOMAIN_API_ENABLED` independently gate reads and mutations. See `docs/api-contract.md` for request/response schemas and `docs/integrations/merchant.md` for rollout.
 
 ### 3. Shipment creation
 

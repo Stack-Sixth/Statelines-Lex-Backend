@@ -19,7 +19,8 @@
     "check": "npm run format:check && npm run typecheck && npm test && npm run build",
     "keys": "node scripts/generate-keys.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "audit:lex-weights": "node --import tsx scripts/audit-lex-weights.ts"
   },
   "dependencies": {
     "@fastify/rate-limit": "11.2.0",

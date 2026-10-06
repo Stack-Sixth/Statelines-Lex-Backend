@@ -1,6 +1,7 @@
 // Install as a Base44 backend function named lexApi, not in browser code.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
+import { prepareLexShipmentWeight } from './lex-shipment-compatibility.ts';
 const encode = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes))
     .replace(/=/g, '')
@@ -55,6 +56,13 @@ export default async function (req: Request) {
       for (const key of ['after', 'limit', 'status'])
         if (body.query[key] !== undefined) target.searchParams.set(key, String(body.query[key]));
     }
+    let payload = body.payload || {};
+    if (body.action === 'createShipment') {
+      const prepared = prepareLexShipmentWeight(payload);
+      if (!prepared.ok)
+        return Response.json({ error: prepared.code, ...prepared }, { status: 422 });
+      payload = prepared.payload;
+    }
     const now = Math.floor(Date.now() / 1000);
     const signingInput =
       jsonPart({ alg: 'HS256', typ: 'JWT' }) +
@@ -81,7 +89,7 @@ export default async function (req: Request) {
         Authorization: 'Bearer ' + signingInput + '.' + encode(new Uint8Array(sig)),
         'Content-Type': 'application/json',
       },
-      body: route.method === 'GET' ? undefined : JSON.stringify(body.payload || {}),
+      body: route.method === 'GET' ? undefined : JSON.stringify(payload),
       signal: AbortSignal.timeout(15000),
       redirect: 'error',
     });

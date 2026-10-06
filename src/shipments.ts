@@ -101,6 +101,12 @@ async function lockedShipment(sql: Sql, id: string, expected: number): Promise<S
     );
   return s;
 }
+export interface MerchantShipmentReference {
+  merchant_id: string;
+  order_id: string;
+  external_shipment_id?: string;
+  correlation_id: string;
+}
 async function history(
   sql: Sql,
   s: Shipment,
@@ -129,12 +135,20 @@ async function history(
 }
 export function shipmentService(db: Database) {
   return {
-    async create(actor: Actor, input: z.infer<typeof createShipmentSchema>) {
+    async create(
+      actor: Actor,
+      input: z.infer<typeof createShipmentSchema>,
+      merchantReference?: MerchantShipmentReference,
+    ) {
       requireRole(actor, 'admin', 'operator', 'merchant');
       const owner = input.owner_user_id || actor.id;
       if (actor.role === 'merchant' && owner !== actor.id)
         throw new AppError(403, 'forbidden', 'Cannot create a shipment for another user');
-      return command(db, actor, input.command_id, 'shipment.create', input, async (sql) => {
+      const action = merchantReference ? 'merchant.shipment.create' : 'shipment.create';
+      const commandInput = merchantReference
+        ? { shipment: input, merchant_reference: merchantReference }
+        : input;
+      return command(db, actor, input.command_id, action, commandInput, async (sql) => {
         if (Date.parse(input.pickup_deadline) <= Date.now())
           throw new AppError(422, 'invalid_deadline', 'Pickup deadline must be in the future');
         const id = randomUUID();
@@ -155,15 +169,126 @@ export function shipmentService(db: Database) {
             ],
           )
         ).rows[0]!;
-        await history(sql, s, null, actor, input.command_id);
-        await emit(sql, 'ShipmentCreated', s, input.command_id, {
-          shipment_id: s.id,
-          tracking_id: s.tracking_id,
-          status: s.status,
-          version: s.version,
-        });
+        if (merchantReference)
+          await sql.query(
+            'INSERT INTO lex.merchant_shipment_refs(shipment_id,merchant_id,order_id,external_shipment_id,correlation_id,created_by,command_id) VALUES($1,$2,$3,$4,$5,$6,$7)',
+            [
+              id,
+              merchantReference.merchant_id,
+              merchantReference.order_id,
+              merchantReference.external_shipment_id || null,
+              merchantReference.correlation_id,
+              actor.id,
+              input.command_id,
+            ],
+          );
+        await history(
+          sql,
+          s,
+          null,
+          actor,
+          input.command_id,
+          undefined,
+          merchantReference
+            ? {
+                merchant_id: merchantReference.merchant_id,
+                order_id: merchantReference.order_id,
+                correlation_id: merchantReference.correlation_id,
+              }
+            : {},
+        );
+        await emit(
+          sql,
+          'ShipmentCreated',
+          s,
+          input.command_id,
+          {
+            shipment_id: s.id,
+            tracking_id: s.tracking_id,
+            status: s.status,
+            version: s.version,
+          },
+          merchantReference?.correlation_id,
+        );
         return s;
       });
+    },
+    async cancelMerchant(
+      actor: Actor,
+      id: string,
+      input: {
+        command_id: string;
+        expected_version: number;
+        reason: string;
+        correlation_id: string;
+      },
+    ) {
+      requireRole(actor, 'merchant');
+      return command(
+        db,
+        actor,
+        input.command_id,
+        'merchant.shipment.cancel',
+        { id, ...input },
+        async (sql) => {
+          const reference = (
+            await sql.query<{ merchant_id: string }>(
+              'SELECT merchant_id FROM lex.merchant_shipment_refs WHERE shipment_id=$1 FOR SHARE',
+              [id],
+            )
+          ).rows[0];
+          if (!reference || reference.merchant_id !== actor.clientId)
+            throw new AppError(404, 'not_found', 'Shipment not found');
+          const shipment = await lockedShipment(sql, id, input.expected_version);
+          if (shipment.owner_user_id !== actor.id)
+            throw new AppError(404, 'not_found', 'Shipment not found');
+          if (shipment.status === 'cancelled')
+            throw new AppError(409, 'already_cancelled', 'Shipment is already cancelled');
+          if (!['created', 'matched'].includes(shipment.status))
+            throw new AppError(
+              409,
+              'not_cancellable',
+              'Only shipments that have not been collected can be cancelled by a merchant',
+            );
+          if (shipment.capacity_reserved) {
+            const released = await sql.query(
+              'UPDATE lex.carriers SET reserved_kg=reserved_kg-$2 WHERE id=$1 AND reserved_kg >= $2',
+              [shipment.assigned_carrier_id, shipment.weight_kg],
+            );
+            if (!released.rowCount)
+              throw new AppError(
+                409,
+                'capacity_invariant',
+                'Shipment capacity reservation is inconsistent',
+              );
+          }
+          const cancelled = (
+            await sql.query<Shipment>(
+              "UPDATE lex.shipments SET status='cancelled',capacity_reserved=false,version=version+1,updated_at=now() WHERE id=$1 RETURNING *",
+              [id],
+            )
+          ).rows[0]!;
+          await history(sql, cancelled, shipment.status, actor, input.command_id, input.reason, {
+            correlation_id: input.correlation_id,
+          });
+          await emit(
+            sql,
+            'ShipmentStatusChanged',
+            cancelled,
+            input.command_id,
+            {
+              shipment_id: id,
+              tracking_id: shipment.tracking_id,
+              carrier_id: shipment.assigned_carrier_id,
+              previous_status: shipment.status,
+              status: 'cancelled',
+              version: cancelled.version,
+            },
+            input.correlation_id,
+          );
+          return cancelled;
+        },
+      );
     },
     async createCarrier(actor: Actor, input: z.infer<typeof carrierSchema>) {
       requireRole(actor, 'admin', 'operator');

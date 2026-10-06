@@ -1,3 +1,4 @@
+import { prepareLexShipmentWeight } from '../integrations/lex-shipment-compatibility.js';
 import { internalId, publicId } from '../src/domains/identifiers.js';
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,6 +22,8 @@ const config: Config = {
   logLevel: 'silent',
   clients: [
     { id: 'test', secret, roles: ['admin', 'operator', 'carrier', 'merchant'] },
+    { id: 'statelines-merchant', secret: secret + 'merchant', roles: ['merchant'] },
+    { id: 'statelines-other-merchant', secret: secret + 'other-merchant', roles: ['merchant'] },
     { id: 'wallet', secret: secret + 'wallet', roles: ['platform'] },
   ],
   webhookSecrets: { wallet: secret },
@@ -28,6 +31,7 @@ const config: Config = {
   pollMs: 100,
   batchSize: 10,
   maxAttempts: 3,
+  merchantDomainApiEnabled: true,
 };
 let db: Database;
 let app: Awaited<ReturnType<typeof buildApp>>;
@@ -68,6 +72,22 @@ const shipBody = () => ({
   service_level: 'standard',
   pickup_deadline: inHours(4),
   delivery_deadline: inHours(10),
+});
+const merchantActor = { role: 'merchant' as Role, id: 'merchant-user-1' };
+const merchantShipmentBody = (overrides = {}) => ({
+  command_id: randomUUID(),
+  merchant_id: 'statelines-merchant',
+  order_id: 'STL-ORDER-1',
+  external_shipment_id: 'merchant-local-shipment-1',
+  correlation_id: 'corr-merchant-1',
+  origin: { corridor: 'Lagos' },
+  destination: { corridor: 'Abuja' },
+  service_level: 'standard',
+  package_size: 'small',
+  weight_kg: 0.45,
+  pickup_deadline: inHours(4),
+  delivery_deadline: inHours(10),
+  ...overrides,
 });
 async function createShipment(overrides = {}) {
   const r = await call('POST', '/v1/shipments', { ...shipBody(), ...overrides });
@@ -168,6 +188,7 @@ before(async () => {
   }
   await db.query(await readFile('migrations/001_core.sql', 'utf8'));
   await db.query(await readFile('migrations/002_domain_foundation.sql', 'utf8'));
+  await db.query(await readFile('migrations/003_merchant_shipment_integration.sql', 'utf8'));
   app = await buildApp(db, config);
 });
 after(async () => {
@@ -175,6 +196,9 @@ after(async () => {
   await db?.close();
 });
 beforeEach(async () => {
+  // Keep Fastify's in-memory rate-limit bucket isolated per test case.
+  await app?.close();
+  app = await buildApp(db, config);
   await db.query(
     'TRUNCATE lex.delivery_attempts,lex.deliveries,lex.destinations,lex.outbox,lex.audit_log,lex.wallet_approvals,lex.shipment_history,lex.shipments,lex.carriers,lex.commands,lex.worker_heartbeats CASCADE',
   );
@@ -891,4 +915,359 @@ test('disabled domain reads leave legacy commands and webhook fanout operational
   } finally {
     await legacyApp.close();
   }
+});
+
+test('compatibility mapping reaches existing API with stable command, tracking, shipment ID and versions', async () => {
+  const original = shipBody();
+  const { weight_kg, package_size, ...fields } = original;
+  const source = { ...fields, package: { weight_kg: String(weight_kg), size: package_size } };
+  const prepared = prepareLexShipmentWeight(source);
+  assert.ok(prepared.ok);
+  assert.equal(prepared.payload.command_id, original.command_id);
+  const first = await call('POST', '/v1/shipments', prepared.payload);
+  assert.equal(first.statusCode, 201, first.body);
+  const shipment = first.json();
+  assert.equal(shipment.version, 1);
+  assert.equal(Number(shipment.weight_kg), weight_kg);
+  const retry = await call('POST', '/v1/shipments', prepared.payload);
+  assert.deepEqual(retry.json(), shipment);
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 1);
+  assert.equal(await count('commands'), 1);
+  const canonical = await call('GET', '/api/v1/shipments/' + publicId('shipment', shipment.id));
+  assert.equal(canonical.json().shipment.shipment_id, publicId('shipment', shipment.id));
+  assert.equal(canonical.json().shipment.tracking_id, shipment.tracking_id);
+  const cancelled = await transition(shipment, 'cancelled');
+  assert.equal(cancelled.id, shipment.id);
+  assert.equal(cancelled.tracking_id, shipment.tracking_id);
+  assert.equal(cancelled.version, 2);
+  assert.deepEqual((await call('POST', '/v1/shipments', prepared.payload)).json(), shipment);
+  const changed = await call('POST', '/v1/shipments', { ...prepared.payload, weight_kg: 9 });
+  assert.equal(changed.statusCode, 409);
+  const stale = await call('POST', '/v1/shipments/' + shipment.id + '/transitions', {
+    command_id: randomUUID(),
+    expected_version: 1,
+    status: 'cancelled',
+  });
+  assert.equal(stale.statusCode, 409);
+});
+
+test('unknown weight stays outside Render and direct new shipment validation remains strict', async () => {
+  const { weight_kg: _weight, ...payload } = shipBody();
+  const prepared = prepareLexShipmentWeight(payload);
+  assert.ok(!prepared.ok);
+  assert.equal(prepared.code, 'WEIGHT_REVIEW_REQUIRED');
+  assert.equal(prepared.render_attempted, false);
+  const direct = await call('POST', '/v1/shipments', payload);
+  assert.equal(direct.statusCode, 400);
+  assert.equal(await count('shipments'), 0);
+  assert.equal(await count('commands'), 0);
+  assert.equal(await count('outbox'), 0);
+});
+
+test('entered package weight reaches the existing API without leaking source metadata', async () => {
+  const { weight_kg: _weight, ...fields } = shipBody();
+  const source = { ...fields, weight_override_kg: 3.25, weight_source: 'entered' };
+  const before = structuredClone(source);
+  const prepared = prepareLexShipmentWeight(source);
+  assert.ok(prepared.ok);
+  assert.equal(prepared.payload.command_id, source.command_id);
+  assert.equal(prepared.payload.weight_override_kg, undefined);
+  assert.equal(prepared.payload.weight_source, undefined);
+  const response = await call('POST', '/v1/shipments', prepared.payload, {
+    id: 'entered-weight-test-admin',
+    role: 'admin',
+  });
+  assert.equal(response.statusCode, 201, response.body);
+  assert.equal(Number(response.json().weight_kg), 3.25);
+  assert.deepEqual(source, before);
+});
+
+test('Merchant domain API requires service JWT and role, while exposing only safe capabilities', async () => {
+  assert.equal((await app.inject({ method: 'GET', url: '/api/v1/capabilities' })).statusCode, 401);
+  assert.equal(
+    (
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/shipments',
+        headers: { authorization: 'Bearer invalid' },
+        payload: merchantShipmentBody(),
+      })
+    ).statusCode,
+    401,
+  );
+  const capability = await call(
+    'GET',
+    '/api/v1/capabilities',
+    undefined,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.deepEqual(capability.json(), {
+    api_version: 1,
+    domain_reads: true,
+    shipment_creation: true,
+    shipment_cancellation: true,
+    cancellation_preflight: true,
+  });
+  const denied = await call('POST', '/api/v1/shipments', merchantShipmentBody(), admin);
+  assert.equal(denied.statusCode, 403);
+});
+
+test('Merchant creation stores external order references and is idempotent under concurrent retry', async () => {
+  const body = merchantShipmentBody();
+  const send = () => call('POST', '/api/v1/shipments', body, merchantActor, 'statelines-merchant');
+  const [first, retry] = await Promise.all([send(), send()]);
+  assert.equal(first.statusCode, 201, first.body);
+  assert.equal(retry.statusCode, 201, retry.body);
+  assert.deepEqual(retry.json(), first.json());
+  const shipment = first.json().shipment;
+  assert.match(shipment.shipment_id, /^SHP_[0-9a-f]{32}$/);
+  assert.match(shipment.tracking_id, /^LEX-/);
+  assert.equal(shipment.version, 1);
+  assert.equal(shipment.status, 'created');
+  assert.equal(shipment.merchant_id, 'statelines-merchant');
+  assert.equal(shipment.order_id, body.order_id);
+  assert.equal(shipment.external_shipment_id, body.external_shipment_id);
+  assert.equal(shipment.correlation_id, body.correlation_id);
+  assert.equal(Number(shipment.package.weight_kg), body.weight_kg);
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('merchant_shipment_refs'), 1);
+  assert.equal(await count('commands'), 1);
+  assert.equal(await count('outbox'), 1);
+  const event = (
+    await db.query<{ envelope: Record<string, unknown> }>('SELECT envelope FROM lex.outbox')
+  ).rows[0]!.envelope;
+  assert.equal(event.event_type, 'ShipmentCreated');
+  assert.equal(event.correlation_id, body.correlation_id);
+});
+
+test('Merchant creation validates strict logistics input, issuer scope, and unique order reference', async () => {
+  const missingWeight = merchantShipmentBody();
+  delete (missingWeight as Record<string, unknown>).weight_kg;
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', missingWeight, merchantActor, 'statelines-merchant'))
+      .statusCode,
+    400,
+  );
+  const invalidRoute = merchantShipmentBody({ destination: { corridor: 'Lagos' } });
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', invalidRoute, merchantActor, 'statelines-merchant'))
+      .statusCode,
+    400,
+  );
+  const wrongScope = merchantShipmentBody({ merchant_id: 'another-merchant' });
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', wrongScope, merchantActor, 'statelines-merchant'))
+      .statusCode,
+    403,
+  );
+  const body = merchantShipmentBody();
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', body, merchantActor, 'statelines-merchant'))
+      .statusCode,
+    201,
+  );
+  const duplicateOrder = { ...body, command_id: randomUUID() };
+  const duplicate = await call(
+    'POST',
+    '/api/v1/shipments',
+    duplicateOrder,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(duplicate.statusCode, 409);
+  assert.equal(await count('shipments'), 1);
+});
+
+test('Merchant canonical reads return references and isolate shipment owners', async () => {
+  const body = merchantShipmentBody();
+  const created = await call(
+    'POST',
+    '/api/v1/shipments',
+    body,
+    merchantActor,
+    'statelines-merchant',
+  );
+  const id = created.json().shipment.shipment_id;
+  const own = await call(
+    'GET',
+    `/api/v1/shipments/${id}`,
+    undefined,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(own.statusCode, 200);
+  assert.equal(own.json().shipment.order_id, body.order_id);
+  assert.equal(own.json().shipment.merchant_id, 'statelines-merchant');
+  assert.equal(own.json().shipment.tracking_id, created.json().shipment.tracking_id);
+  assert.equal(own.json().shipment.version, 1);
+  const other = await call(
+    'GET',
+    `/api/v1/shipments/${id}`,
+    undefined,
+    { id: 'merchant-user-2', role: 'merchant' },
+    'statelines-merchant',
+  );
+  assert.equal(other.statusCode, 404);
+  const otherMerchant = await call(
+    'GET',
+    `/api/v1/shipments/${id}`,
+    undefined,
+    merchantActor,
+    'statelines-other-merchant',
+  );
+  assert.equal(otherMerchant.statusCode, 404);
+  const otherMerchantList = await call(
+    'GET',
+    '/api/v1/shipments?limit=10',
+    undefined,
+    merchantActor,
+    'statelines-other-merchant',
+  );
+  assert.deepEqual(otherMerchantList.json().items, []);
+  const list = await call(
+    'GET',
+    '/api/v1/shipments?limit=10',
+    undefined,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(list.json().items[0].shipment_id, id);
+  assert.equal(list.json().items[0].order_id, body.order_id);
+});
+
+test('Merchant cancellation enforces version/state, retries idempotently, and emits canonical event', async () => {
+  const body = merchantShipmentBody();
+  const created = await call(
+    'POST',
+    '/api/v1/shipments',
+    body,
+    merchantActor,
+    'statelines-merchant',
+  );
+  const shipment = created.json().shipment;
+  const preflight = await call(
+    'GET',
+    `/api/v1/shipments/${shipment.shipment_id}/cancellable`,
+    undefined,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.deepEqual(preflight.json(), {
+    shipment_id: shipment.shipment_id,
+    status: 'created',
+    version: 1,
+    cancellable: true,
+    reason: null,
+  });
+  const stale = await call(
+    'POST',
+    `/api/v1/shipments/${shipment.shipment_id}/cancel`,
+    {
+      command_id: randomUUID(),
+      expected_version: 2,
+      correlation_id: 'cancel-stale',
+      reason: 'Changed mind',
+    },
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(stale.statusCode, 409);
+  assert.equal(stale.json().error.code, 'VERSION_CONFLICT');
+  const bodyCancel = {
+    command_id: randomUUID(),
+    expected_version: 1,
+    correlation_id: 'cancel-correlation-1',
+    reason: 'Customer requested cancellation',
+  };
+  const path = `/api/v1/shipments/${shipment.shipment_id}/cancel`;
+  const cancelled = await call('POST', path, bodyCancel, merchantActor, 'statelines-merchant');
+  const repeated = await call('POST', path, bodyCancel, merchantActor, 'statelines-merchant');
+  assert.equal(cancelled.statusCode, 200);
+  assert.deepEqual(repeated.json(), cancelled.json());
+  assert.equal(cancelled.json().shipment.status, 'cancelled');
+  assert.equal(cancelled.json().shipment.version, 2);
+  const already = await call(
+    'POST',
+    path,
+    { ...bodyCancel, command_id: randomUUID(), expected_version: 2 },
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(already.statusCode, 409);
+  assert.equal(already.json().error.code, 'ALREADY_CANCELLED');
+  const outbox = (
+    await db.query<{ envelope: Record<string, unknown> }>(
+      'SELECT envelope FROM lex.outbox ORDER BY created_at',
+    )
+  ).rows;
+  assert.equal(outbox.length, 2);
+  assert.equal(outbox[1]!.envelope.event_type, 'ShipmentStatusChanged');
+  assert.equal(outbox[1]!.envelope.correlation_id, bodyCancel.correlation_id);
+  const canonicalEvents = await call('GET', '/api/v1/events', undefined, admin);
+  assert.ok(
+    canonicalEvents
+      .json()
+      .items.some((event: { event_type: string }) => event.event_type === 'shipment.cancelled'),
+  );
+});
+
+test('Merchant cannot cancel collected/delivered shipments; cancellation gate is opt-in', async () => {
+  const body = merchantShipmentBody();
+  const created = await call(
+    'POST',
+    '/api/v1/shipments',
+    body,
+    merchantActor,
+    'statelines-merchant',
+  );
+  const shipment = created.json().shipment;
+  await db.query("UPDATE lex.shipments SET status='delivered',version=4 WHERE id=$1", [
+    shipment.id,
+  ]);
+  const denied = await call(
+    'POST',
+    `/api/v1/shipments/${shipment.shipment_id}/cancel`,
+    {
+      command_id: randomUUID(),
+      expected_version: 4,
+      correlation_id: 'cancel-delivered',
+      reason: 'Requested',
+    },
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(denied.statusCode, 409);
+  assert.equal(denied.json().error.code, 'NOT_CANCELLABLE');
+  const disabledApp = await buildApp(db, { ...config, merchantDomainApiEnabled: false });
+  try {
+    const headers = {
+      authorization: 'Bearer ' + (await token(merchantActor, 'statelines-merchant')),
+    };
+    const capability = await disabledApp.inject({
+      method: 'GET',
+      url: '/api/v1/capabilities',
+      headers,
+    });
+    assert.equal(capability.json().shipment_creation, false);
+    assert.equal(capability.json().shipment_cancellation, false);
+    const disabled = await disabledApp.inject({
+      method: 'POST',
+      url: '/api/v1/shipments',
+      headers,
+      payload: body,
+    });
+    assert.equal(disabled.statusCode, 404);
+  } finally {
+    await disabledApp.close();
+  }
+});
+
+test('public health remains public and legacy APIs keep their existing auth contract', async () => {
+  assert.equal((await app.inject({ method: 'GET', url: '/health/live' })).statusCode, 200);
+  assert.equal((await app.inject({ method: 'GET', url: '/health/ready' })).statusCode, 200);
+  assert.equal((await app.inject({ method: 'GET', url: '/v1/shipments' })).statusCode, 401);
+  const oldCreate = await call('POST', '/v1/shipments', shipBody());
+  assert.equal(oldCreate.statusCode, 201, oldCreate.body);
 });
