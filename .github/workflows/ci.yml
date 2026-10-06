@@ -44,14 +44,16 @@ jobs:
       - run: npm ci
       - name: Create ephemeral migration-runner client config
         run: |
-          node --input-type=module <<'NODE' >> "$GITHUB_ENV"
+          node --input-type=module <<'NODE'
           import { randomBytes } from 'node:crypto';
+          import { appendFile } from 'node:fs/promises';
           const client = {
             id: 'ci-migration-runner',
             secret: randomBytes(32).toString('hex'),
             roles: ['admin'],
           };
-          process.stdout.write(`API_CLIENTS_JSON=${JSON.stringify([client])}\n`);
+          process.stdout.write(`::add-mask::${client.secret}\n`);
+          await appendFile(process.env.GITHUB_ENV, `API_CLIENTS_JSON=${JSON.stringify([client])}\n`);
           NODE
       - name: Build production migration runner
         run: npm run build

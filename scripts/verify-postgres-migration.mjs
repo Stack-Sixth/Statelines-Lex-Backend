@@ -112,7 +112,7 @@ async function verify() {
   const referenceRelation = await pool.query(
     "SELECT to_regclass('lex.merchant_shipment_refs') AS relation",
   );
-  assert.equal(referenceRelation.rows[0].relation, 'lex.merchant_shipment_refs');
+  assert.notEqual(referenceRelation.rows[0].relation, null, 'Merchant reference table must exist');
   assert.equal(
     (
       await pool.query(
