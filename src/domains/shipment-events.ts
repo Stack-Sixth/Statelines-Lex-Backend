@@ -12,7 +12,6 @@ export const canonicalShipmentTypes = [
 export function canonicalShipmentEvent(
   envelope: Record<string, unknown>,
   s: Record<string, unknown>,
-  correlationId?: string,
 ) {
   const event = eventProjection(envelope);
   return {
@@ -21,7 +20,7 @@ export function canonicalShipmentEvent(
     event_version: 1,
     occurred_at: event.occurred_at,
     source: event.source,
-    correlation_id: correlationId || s.correlation_id || envelope.correlation_id,
+    correlation_id: event.correlation_id,
     command_id: envelope.causation_id,
     shipment: {
       shipment_id: publicId('shipment', s.id as string),

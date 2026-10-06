@@ -172,7 +172,7 @@ export async function emit(
   if (canonicalShipmentTypes.includes(eventType)) {
     const snapshot = (
       await sql.query(
-        `SELECT s.*,r.merchant_id,r.order_id,r.external_shipment_id,r.correlation_id
+        `SELECT s.*,r.merchant_id,r.order_id,r.external_shipment_id
          FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id
          WHERE s.id=$1`,
         [shipment.id],
@@ -180,7 +180,7 @@ export async function emit(
     ).rows[0];
     if (!snapshot || snapshot.version !== shipment.version)
       throw Error('Canonical event must describe the current transaction Shipment version');
-    canonicalEnvelope = canonicalShipmentEvent(envelope, snapshot, correlationId);
+    canonicalEnvelope = canonicalShipmentEvent(envelope, snapshot);
   }
   await sql.query(
     'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope,canonical_envelope) VALUES($1,$2,$3,$4,$5,$6)',

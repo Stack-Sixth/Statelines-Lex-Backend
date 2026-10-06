@@ -1533,7 +1533,7 @@ test('canonical lifecycle snapshots cover assignment, status changes and deliver
     assert.equal(snapshot.version, i + 1);
     assert.equal(snapshot.merchant_id, 'statelines-merchant');
     assert.equal(snapshot.order_id, 'STL-ORDER-1');
-    assert.equal(event.correlation_id, 'corr-merchant-1');
+    assert.equal(event.correlation_id, i === 0 ? 'corr-merchant-1' : created.shipment.id);
     assert.equal(snapshot.shipment_id, created.shipment.shipment_id);
   }
 });
