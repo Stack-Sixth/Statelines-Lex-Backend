@@ -1,5 +1,7 @@
 # Event contract
 
+For the additive canonical Shipment delivery implemented after the foundation phase, see [Render → LEX canonical events](integrations/lex-canonical-events.md). The foundation-phase notes below describe the original legacy behavior.
+
 ## Current implementation
 
 The authoritative event is persisted in lex.outbox in the same transaction as the shipment mutation. Existing outbound envelopes are unchanged. GET /api/v1/events projects those same stored events; it neither emits a second event nor changes subscriptions.

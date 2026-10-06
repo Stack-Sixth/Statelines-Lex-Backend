@@ -84,23 +84,29 @@ jobs:
         shell: bash
         run: |
           temp_dir="$(mktemp -d)"
-          migration='003_merchant_shipment_integration.sql'
-          mv "migrations/$migration" "$temp_dir/$migration"
+          migrations=(003_merchant_shipment_integration.sql 004_canonical_webhook_delivery.sql)
+          for migration in "${migrations[@]}"; do
+            mv "migrations/$migration" "$temp_dir/$migration"
+          done
           restore_migration() {
-            if [[ -f "$temp_dir/$migration" ]]; then
-              mv "$temp_dir/$migration" "migrations/$migration"
-            fi
+            for migration in "${migrations[@]}"; do
+              if [[ -f "$temp_dir/$migration" ]]; then
+                mv "$temp_dir/$migration" "migrations/$migration"
+              fi
+            done
             rmdir "$temp_dir"
           }
           trap restore_migration EXIT
           npm run migrate:prod
           node scripts/verify-postgres-migration.mjs seed
-          mv "$temp_dir/$migration" "migrations/$migration"
+          for migration in "${migrations[@]}"; do
+            mv "$temp_dir/$migration" "migrations/$migration"
+          done
           rmdir "$temp_dir"
           trap - EXIT
-      - name: Apply migration 003 through Render production command
+      - name: Apply migrations 003 and 004 through Render production command
         run: npm run migrate:prod
-      - name: Verify 002-to-003 upgrade and Shipment preservation
+      - name: Verify upgrade and preservation of Shipment, legacy event and destination
         run: node scripts/verify-postgres-migration.mjs verify
       - name: Verify production migration command is safe to rerun
         run: |

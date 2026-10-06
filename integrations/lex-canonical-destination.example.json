@@ -1,0 +1,15 @@
+{
+  "command_id": "<NEW_UUID_FOR_DESTINATION_CONFIGURATION>",
+  "name": "LEX canonical Shipment projection",
+  "client_id": "lex-canonical-projection",
+  "url": "<VERIFIED_LEX_CANONICAL_HTTPS_RECEIVER_URL>",
+  "secret_ref": "lex_canonical",
+  "envelope_format": "canonical_v1",
+  "active": false,
+  "event_types": [
+    "ShipmentCreated",
+    "ShipmentStatusChanged",
+    "ShipmentMatched",
+    "ShipmentDelivered"
+  ]
+}

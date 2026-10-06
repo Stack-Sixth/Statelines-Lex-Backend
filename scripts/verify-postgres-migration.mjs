@@ -13,6 +13,13 @@ assert.equal(parsedUrl.pathname, '/lex_test', 'Migration verification only permi
 const pool = new pg.Pool({ connectionString: databaseUrl, connectionTimeoutMillis: 5000 });
 const shipmentId = '10000000-0000-4000-8000-000000000101';
 const commandId = '10000000-0000-4000-8000-000000000102';
+const eventId = '10000000-0000-4000-8000-000000000103';
+const destinationId = '10000000-0000-4000-8000-000000000104';
+const legacyEnvelope = {
+  event_id: eventId,
+  event_type: 'ShipmentCreated',
+  payload: { status: 'created', version: 1 },
+};
 const expectedShipment = {
   id: shipmentId,
   shipment_id: 'SHP_10000000000040008000000000000101',
@@ -87,6 +94,21 @@ async function seed() {
       4,
     ],
   );
+  await pool.query(
+    'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope) VALUES($1,$2,$3,1,$4)',
+    [eventId, 'ShipmentCreated', shipmentId, legacyEnvelope],
+  );
+  await pool.query(
+    'INSERT INTO lex.destinations(id,name,client_id,url,secret_ref,event_types) VALUES($1,$2,$3,$4,$5,$6)',
+    [
+      destinationId,
+      'Existing LEX',
+      'ci-platform',
+      'https://receiver.example.com/legacy',
+      'ci-webhook',
+      ['ShipmentCreated'],
+    ],
+  );
   const seeded = await snapshot();
   assert.deepEqual(seeded, expectedShipment);
   process.stdout.write(`Seeded pre-003 Shipment snapshot: ${JSON.stringify(seeded)}\n`);
@@ -97,6 +119,7 @@ async function verify() {
     '001_core.sql',
     '002_domain_foundation.sql',
     '003_merchant_shipment_integration.sql',
+    '004_canonical_webhook_delivery.sql',
   ]) {
     const count = await pool.query(
       'SELECT count(*)::int AS count FROM lex.schema_migrations WHERE name=$1',
@@ -108,6 +131,25 @@ async function verify() {
     await snapshot(),
     expectedShipment,
     'migration 003 must preserve the legacy Shipment',
+  );
+  const oldEvent = (
+    await pool.query(
+      'SELECT envelope,canonical_envelope,dispatched_at FROM lex.outbox WHERE id=$1',
+      [eventId],
+    )
+  ).rows[0];
+  assert.deepEqual(oldEvent.envelope, legacyEnvelope);
+  assert.equal(oldEvent.canonical_envelope, null, 'No synthetic historical snapshot');
+  assert.equal(oldEvent.dispatched_at, null, 'Migration does not dispatch events');
+  const oldDestination = (
+    await pool.query('SELECT envelope_format,active FROM lex.destinations WHERE id=$1', [
+      destinationId,
+    ])
+  ).rows[0];
+  assert.deepEqual(oldDestination, { envelope_format: 'legacy_v1', active: true });
+  assert.equal(
+    (await pool.query('SELECT count(*)::int AS count FROM lex.deliveries')).rows[0].count,
+    0,
   );
   const referenceRelation = await pool.query(
     "SELECT to_regclass('lex.merchant_shipment_refs') AS relation",

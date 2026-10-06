@@ -1,5 +1,7 @@
 # LEX integration handoff
 
+For the additive canonical Shipment delivery implemented after the foundation phase, see [Render → LEX canonical events](lex-canonical-events.md). The foundation-phase notes below describe the original legacy behavior.
+
 Phase 2 changes are optional reads only. The external application remains independently deployed; this task has not changed it.
 
 ## Existing evidence

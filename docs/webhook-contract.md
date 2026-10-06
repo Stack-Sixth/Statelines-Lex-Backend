@@ -1,5 +1,7 @@
 # Webhook contract
 
+For the additive canonical Shipment delivery implemented after the foundation phase, see [Render → LEX canonical events](integrations/lex-canonical-events.md). The foundation-phase notes below describe the original legacy behavior.
+
 Phase 2 does not change outbound delivery or introduce inbound endpoints. `/api/v1/webhooks/{noc,lex,merchant,carrier,pudo}` are planned, not operational. Do not point existing webhooks at them.
 
 ## Existing Node outbound contract

@@ -5,6 +5,8 @@ import type { Sender } from './webhooks.js';
 export interface DeliveryJob {
   id: string;
   event_id: string;
+  event_type: string;
+  envelope_format: 'legacy_v1' | 'canonical_v1';
   destination_id: string;
   attempts: number;
   max_attempts: number;
@@ -23,16 +25,16 @@ export class DeliveryWorker {
   async fanout() {
     return this.db.transaction(async (sql) => {
       const events = (
-        await sql.query<{ id: string; event_type: string }>(
-          `SELECT id,event_type FROM lex.outbox WHERE dispatched_at IS NULL ORDER BY created_at,id LIMIT $1 FOR UPDATE SKIP LOCKED`,
+        await sql.query<{ id: string; event_type: string; has_canonical: boolean }>(
+          `SELECT id,event_type,canonical_envelope IS NOT NULL AS has_canonical FROM lex.outbox WHERE dispatched_at IS NULL ORDER BY created_at,id LIMIT $1 FOR UPDATE SKIP LOCKED`,
           [this.config.batchSize],
         )
       ).rows;
       for (const event of events) {
         const targets = (
           await sql.query<{ id: string }>(
-            'SELECT id FROM lex.destinations WHERE active AND $1=ANY(event_types)',
-            [event.event_type],
+            `SELECT id FROM lex.destinations WHERE active AND $1=ANY(event_types) AND (envelope_format='legacy_v1' OR $2)`,
+            [event.event_type, event.has_canonical],
           )
         ).rows;
         for (const target of targets)
@@ -52,7 +54,7 @@ export class DeliveryWorker {
       );
       const row = (
         await sql.query<Omit<DeliveryJob, 'envelope'>>(
-          `SELECT d.*,p.url,p.secret_ref FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE p.active AND e.event_type=ANY(p.event_types) AND d.attempts<d.max_attempts AND ((d.status IN ('pending','retrying') AND d.next_attempt_at<=now()) OR (d.status='running' AND d.lease_until<now())) ORDER BY d.next_attempt_at,d.id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`,
+          `SELECT d.*,p.url,p.secret_ref,p.envelope_format,e.event_type FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE p.active AND e.event_type=ANY(p.event_types) AND (p.envelope_format='legacy_v1' OR e.canonical_envelope IS NOT NULL) AND d.attempts<d.max_attempts AND ((d.status IN ('pending','retrying') AND d.next_attempt_at<=now()) OR (d.status='running' AND d.lease_until<now())) ORDER BY d.next_attempt_at,d.id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`,
         )
       ).rows[0];
       if (!row) return;
@@ -62,12 +64,18 @@ export class DeliveryWorker {
         [row.id, token],
       );
       const event = (
-        await sql.query<{ envelope: Record<string, unknown> }>(
-          'SELECT envelope FROM lex.outbox WHERE id=$1',
-          [row.event_id],
-        )
+        await sql.query<{
+          envelope: Record<string, unknown>;
+          canonical_envelope: Record<string, unknown>;
+        }>('SELECT envelope,canonical_envelope FROM lex.outbox WHERE id=$1', [row.event_id])
       ).rows[0]!;
-      return { ...row, attempts: row.attempts + 1, lease_token: token, envelope: event.envelope };
+      return {
+        ...row,
+        attempts: row.attempts + 1,
+        lease_token: token,
+        envelope:
+          row.envelope_format === 'canonical_v1' ? event.canonical_envelope : event.envelope,
+      };
     });
   }
   async process(job: DeliveryJob) {
@@ -75,7 +83,7 @@ export class DeliveryWorker {
     const active = (
       await this.db.query(
         'SELECT id FROM lex.destinations WHERE id=$1 AND active AND $2=ANY(event_types)',
-        [job.destination_id, String(job.envelope.event_type)],
+        [job.destination_id, job.event_type],
       )
     ).rowCount;
     if (!active) {

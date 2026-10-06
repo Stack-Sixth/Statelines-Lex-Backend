@@ -1,3 +1,4 @@
+import { canonicalShipmentEvent, canonicalShipmentTypes } from './domains/shipment-events.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Role } from './config.js';
@@ -167,9 +168,30 @@ export async function emit(
     aggregate: { type: 'shipment', id: shipment.id, version: shipment.version },
     payload,
   };
+  let canonicalEnvelope = null;
+  if (canonicalShipmentTypes.includes(eventType)) {
+    const snapshot = (
+      await sql.query(
+        `SELECT s.*,r.merchant_id,r.order_id,r.external_shipment_id
+         FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id
+         WHERE s.id=$1`,
+        [shipment.id],
+      )
+    ).rows[0];
+    if (!snapshot || snapshot.version !== shipment.version)
+      throw Error('Canonical event must describe the current transaction Shipment version');
+    canonicalEnvelope = canonicalShipmentEvent(envelope, snapshot);
+  }
   await sql.query(
-    'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope) VALUES($1,$2,$3,$4,$5)',
-    [id, eventType, shipment.id, shipment.version, JSON.stringify(envelope)],
+    'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope,canonical_envelope) VALUES($1,$2,$3,$4,$5,$6)',
+    [
+      id,
+      eventType,
+      shipment.id,
+      shipment.version,
+      JSON.stringify(envelope),
+      canonicalEnvelope ? JSON.stringify(canonicalEnvelope) : null,
+    ],
   );
   return id;
 }

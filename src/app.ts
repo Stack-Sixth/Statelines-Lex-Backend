@@ -1,3 +1,4 @@
+import { canonicalShipmentTypes } from './domains/shipment-events.js';
 import Fastify from 'fastify';
 import { domainApi } from './api/domain-reads.js';
 import rateLimit from '@fastify/rate-limit';
@@ -145,6 +146,8 @@ export async function buildApp(db: Database, config: Config) {
       client_id: z.string().min(1),
       url: z.string().url(),
       secret_ref: z.string().min(1),
+      envelope_format: z.enum(['legacy_v1', 'canonical_v1']).optional(),
+      active: z.boolean().optional(),
       event_types: z
         .array(
           z.enum([
@@ -162,11 +165,29 @@ export async function buildApp(db: Database, config: Config) {
     requireRole(req.actor, 'admin');
     const b = destinationSchema.parse(req.body);
     validateEndpoint(b.url, config.allowedHosts);
+    if (
+      b.envelope_format === 'canonical_v1' &&
+      b.event_types.some((type) => !canonicalShipmentTypes.includes(type))
+    )
+      throw new AppError(
+        422,
+        'unsupported_canonical_event',
+        'Canonical destinations accept Shipment lifecycle events only',
+      );
     if (!config.webhookSecrets[b.secret_ref])
       throw new AppError(
         422,
         'missing_secret',
         'Configure this secret reference on API and worker first',
+      );
+    if (
+      b.envelope_format === 'canonical_v1' &&
+      config.clients.some((c) => c.secret === config.webhookSecrets[b.secret_ref])
+    )
+      throw new AppError(
+        422,
+        'shared_signing_secret',
+        'Canonical webhook signing requires a separate secret from service JWTs',
       );
     if (!config.clients.some((c) => c.id === b.client_id && c.roles.includes('platform')))
       throw new AppError(
@@ -178,8 +199,17 @@ export async function buildApp(db: Database, config: Config) {
       await command(db, req.actor, b.command_id, 'destination.create', b, async (sql) => {
         const row = (
           await sql.query(
-            'INSERT INTO lex.destinations(id,name,client_id,url,secret_ref,event_types) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,name,client_id,url,event_types,active',
-            [randomUUID(), b.name, b.client_id, b.url, b.secret_ref, b.event_types],
+            'INSERT INTO lex.destinations(id,name,client_id,url,secret_ref,event_types,envelope_format,active) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,name,client_id,url,event_types,active,envelope_format',
+            [
+              randomUUID(),
+              b.name,
+              b.client_id,
+              b.url,
+              b.secret_ref,
+              b.event_types,
+              b.envelope_format || 'legacy_v1',
+              b.active ?? b.envelope_format !== 'canonical_v1',
+            ],
           )
         ).rows[0]!;
         await audit(sql, req.actor, 'destination.created', String(row.id), b.command_id);
@@ -192,7 +222,7 @@ export async function buildApp(db: Database, config: Config) {
     return {
       items: (
         await db.query(
-          'SELECT id,name,client_id,url,event_types,active FROM lex.destinations ORDER BY created_at',
+          'SELECT id,name,client_id,url,event_types,active,envelope_format FROM lex.destinations ORDER BY created_at',
         )
       ).rows,
     };
@@ -219,8 +249,8 @@ export async function buildApp(db: Database, config: Config) {
       { id, ...b },
       async (sql) => {
         const destination = (
-          await sql.query<{ active: boolean; event_types: string[] }>(
-            'SELECT active,event_types FROM lex.destinations WHERE id=$1 FOR UPDATE',
+          await sql.query<{ active: boolean; event_types: string[]; envelope_format: string }>(
+            'SELECT active,event_types,envelope_format FROM lex.destinations WHERE id=$1 FOR UPDATE',
             [id],
           )
         ).rows[0];
@@ -229,8 +259,15 @@ export async function buildApp(db: Database, config: Config) {
           throw new AppError(409, 'inactive_destination', 'Destination must be active');
         const events = (
           await sql.query<{ id: string }>(
-            'SELECT id FROM lex.outbox WHERE created_at >= $1 AND created_at < $2 AND ($3::uuid IS NULL OR id>$3) AND event_type=ANY($4::text[]) ORDER BY id LIMIT $5',
-            [b.from, b.to, b.after || null, destination.event_types, b.limit],
+            `SELECT id FROM lex.outbox WHERE created_at >= $1 AND created_at < $2 AND ($3::uuid IS NULL OR id>$3) AND event_type=ANY($4::text[]) AND ($6::text = 'legacy_v1' OR canonical_envelope IS NOT NULL) ORDER BY id LIMIT $5`,
+            [
+              b.from,
+              b.to,
+              b.after || null,
+              destination.event_types,
+              b.limit,
+              destination.envelope_format,
+            ],
           )
         ).rows;
         let created = 0;
