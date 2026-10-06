@@ -3,7 +3,20 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
-  test:
+  quality:
+    name: Code quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  postgresql17-integration:
+    name: PostgreSQL 17 integration
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -16,6 +29,12 @@ jobs:
         options: >-
           --health-cmd pg_isready --health-interval 5s
           --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://lex:lex_ci_only@localhost:5432/lex_test
+      TEST_DATABASE_URL: postgresql://lex:lex_ci_only@localhost:5432/lex_test
+      DATABASE_SSL: 'false'
+      DOMAIN_READ_API_ENABLED: 'false'
+      MERCHANT_DOMAIN_API_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,6 +42,67 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run check
-        env:
-          TEST_DATABASE_URL: postgresql://lex:lex_ci_only@localhost:5432/lex_test
+      - name: Create ephemeral migration-runner client config
+        run: |
+          node --input-type=module <<'NODE' >> "$GITHUB_ENV"
+          import { randomBytes } from 'node:crypto';
+          const client = {
+            id: 'ci-migration-runner',
+            secret: randomBytes(32).toString('hex'),
+            roles: ['admin'],
+          };
+          process.stdout.write(`API_CLIENTS_JSON=${JSON.stringify([client])}\n`);
+          NODE
+      - name: Build production migration runner
+        run: npm run build
+      - name: Wait for PostgreSQL 17
+        run: |
+          node --input-type=module <<'NODE'
+          import pg from 'pg';
+          const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 1000 });
+          const deadline = Date.now() + 30000;
+          let connected = false;
+          try {
+            while (Date.now() < deadline) {
+              try {
+                await pool.query('SELECT 1');
+                connected = true;
+                break;
+              } catch {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+              }
+            }
+          } finally {
+            await pool.end();
+          }
+          if (!connected) throw new Error('PostgreSQL 17 did not become ready within 30 seconds');
+          process.stdout.write('PostgreSQL 17 is ready\n');
+          NODE
+      - name: Create existing 001-002 installation using Render migration runner
+        shell: bash
+        run: |
+          temp_dir="$(mktemp -d)"
+          migration='003_merchant_shipment_integration.sql'
+          mv "migrations/$migration" "$temp_dir/$migration"
+          restore_migration() {
+            if [[ -f "$temp_dir/$migration" ]]; then
+              mv "$temp_dir/$migration" "migrations/$migration"
+            fi
+            rmdir "$temp_dir"
+          }
+          trap restore_migration EXIT
+          npm run migrate:prod
+          node scripts/verify-postgres-migration.mjs seed
+          mv "$temp_dir/$migration" "migrations/$migration"
+          rmdir "$temp_dir"
+          trap - EXIT
+      - name: Apply migration 003 through Render production command
+        run: npm run migrate:prod
+      - name: Verify 002-to-003 upgrade and Shipment preservation
+        run: node scripts/verify-postgres-migration.mjs verify
+      - name: Verify production migration command is safe to rerun
+        run: |
+          npm run migrate:prod
+          node scripts/verify-postgres-migration.mjs verify
+      - name: Run PostgreSQL 17 application and legacy integration tests
+        run: npm test
