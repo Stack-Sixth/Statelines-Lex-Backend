@@ -26,7 +26,7 @@ const config: Config = {
     { id: 'statelines-other-merchant', secret: secret + 'other-merchant', roles: ['merchant'] },
     { id: 'wallet', secret: secret + 'wallet', roles: ['platform'] },
   ],
-  webhookSecrets: { wallet: secret },
+  webhookSecrets: { wallet: secret, lex_canonical: 'test-only-dedicated-webhook-key-'.repeat(3) },
   allowedHosts: ['receiver.example.com'],
   pollMs: 100,
   batchSize: 10,
@@ -189,6 +189,7 @@ before(async () => {
   await db.query(await readFile('migrations/001_core.sql', 'utf8'));
   await db.query(await readFile('migrations/002_domain_foundation.sql', 'utf8'));
   await db.query(await readFile('migrations/003_merchant_shipment_integration.sql', 'utf8'));
+  await db.query(await readFile('migrations/004_canonical_webhook_delivery.sql', 'utf8'));
   app = await buildApp(db, config);
 });
 after(async () => {
@@ -1273,4 +1274,341 @@ test('only GET health routes are public; root, LEX and domain APIs require authe
   assert.equal((await app.inject({ method: 'POST', url: '/health/live' })).statusCode, 401);
   const oldCreate = await call('POST', '/v1/shipments', shipBody());
   assert.equal(oldCreate.statusCode, 201, oldCreate.body);
+});
+
+const canonicalDestinationBody = (overrides = {}) => ({
+  command_id: randomUUID(),
+  name: 'LEX canonical projection',
+  client_id: 'wallet', // Test platform-role client; independent from the webhook signing key.
+  url: 'https://receiver.example.com/canonical',
+  secret_ref: 'lex_canonical',
+  envelope_format: 'canonical_v1',
+  event_types: ['ShipmentCreated', 'ShipmentStatusChanged', 'ShipmentMatched', 'ShipmentDelivered'],
+  ...overrides,
+});
+async function canonicalDestination(overrides = {}) {
+  const result = await call('POST', '/v1/destinations', canonicalDestinationBody(overrides));
+  assert.equal(result.statusCode, 201, result.body);
+  return result.json();
+}
+async function createMerchant(body = merchantShipmentBody()) {
+  const result = await call(
+    'POST',
+    '/api/v1/shipments',
+    body,
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(result.statusCode, 201, result.body);
+  return result.json();
+}
+
+test('Merchant creation persists exactly one complete canonical snapshot beside the unchanged legacy event', async () => {
+  const body = merchantShipmentBody();
+  const created = await createMerchant(body);
+  assert.deepEqual(await createMerchant(body), created);
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 1);
+  const row = (await db.query('SELECT id,envelope,canonical_envelope FROM lex.outbox')).rows[0]!;
+  const legacy = row.envelope as Record<string, unknown>;
+  const canonical = row.canonical_envelope as Record<string, unknown>;
+  assert.deepEqual(legacy.payload, {
+    shipment_id: created.shipment.id,
+    tracking_id: created.shipment.tracking_id,
+    status: 'created',
+    version: 1,
+  });
+  assert.equal(legacy.event_type, 'ShipmentCreated');
+  assert.equal(legacy.source, 'statelines-lex');
+  assert.deepEqual(canonical, {
+    event_id: publicId('event', row.id as string),
+    event_type: 'shipment.created',
+    event_version: 1,
+    occurred_at: legacy.occurred_at,
+    source: 'statelines-domain-platform',
+    correlation_id: body.correlation_id,
+    command_id: body.command_id,
+    shipment: {
+      shipment_id: created.shipment.shipment_id,
+      tracking_id: created.shipment.tracking_id,
+      merchant_id: body.merchant_id,
+      order_id: body.order_id,
+      external_shipment_id: body.external_shipment_id,
+      status: 'created',
+      version: 1,
+      origin: { corridor: 'lagos' },
+      destination: { corridor: 'abuja' },
+      service_level: body.service_level,
+      package_size: body.package_size,
+      weight_kg: body.weight_kg,
+      pickup_deadline: body.pickup_deadline,
+      delivery_deadline: body.delivery_deadline,
+    },
+  });
+  assert.equal(JSON.stringify(canonical).includes(secret), false);
+});
+
+test('canonical snapshot storage failure rolls back Merchant Shipment, reference, history and command', async () => {
+  await db.query(
+    "CREATE FUNCTION lex.reject_canonical() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.canonical_envelope IS NOT NULL THEN RAISE EXCEPTION 'snapshot storage failed'; END IF; RETURN NEW; END $$; CREATE TRIGGER reject_canonical BEFORE INSERT ON lex.outbox FOR EACH ROW EXECUTE FUNCTION lex.reject_canonical();",
+  );
+  try {
+    const response = await call(
+      'POST',
+      '/api/v1/shipments',
+      merchantShipmentBody(),
+      merchantActor,
+      'statelines-merchant',
+    );
+    assert.equal(response.statusCode, 500);
+    for (const table of [
+      'shipments',
+      'merchant_shipment_refs',
+      'shipment_history',
+      'commands',
+      'outbox',
+    ])
+      assert.equal(await count(table), 0, table);
+  } finally {
+    await db.query(
+      'DROP TRIGGER reject_canonical ON lex.outbox; DROP FUNCTION lex.reject_canonical();',
+    );
+  }
+});
+
+test('canonical destinations are opt-in, default inactive, reject billing events and JWT signing keys', async () => {
+  const body = canonicalDestinationBody();
+  const response = await call('POST', '/v1/destinations', body);
+  assert.equal(response.statusCode, 201, response.body);
+  assert.equal(response.json().active, false);
+  assert.deepEqual((await call('POST', '/v1/destinations', body)).json(), response.json());
+  assert.equal((await destination()).envelope_format, 'legacy_v1');
+  const badType = await call(
+    'POST',
+    '/v1/destinations',
+    canonicalDestinationBody({ event_types: ['WalletApprovalCreated'] }),
+  );
+  assert.equal(badType.statusCode, 422);
+  const reusedKey = await call(
+    'POST',
+    '/v1/destinations',
+    canonicalDestinationBody({ secret_ref: 'wallet' }),
+  );
+  assert.equal(reusedKey.statusCode, 422);
+  assert.equal(reusedKey.json().error, 'shared_signing_secret');
+  assert.equal(
+    (await call('POST', '/v1/destinations', body, merchantActor, 'statelines-merchant')).statusCode,
+    403,
+  );
+});
+
+test('canonical retry preserves event-time snapshot and event ID while legacy destinations retain their envelope', async () => {
+  const target = await canonicalDestination({ active: true });
+  const legacyTarget = await destination();
+  const body = merchantShipmentBody();
+  const created = await createMerchant(body);
+  const original = (await db.query('SELECT envelope,canonical_envelope FROM lex.outbox')).rows[0]!;
+  const canonical = original.canonical_envelope as Record<string, unknown>;
+  const sent: { envelope: Record<string, unknown>; id: string }[] = [];
+  let fail = true;
+  const worker = new DeliveryWorker(db, config, async (url, signingSecret, envelope, id) => {
+    sent.push({ envelope: structuredClone(envelope), id });
+    if (url.endsWith('/canonical')) {
+      assert.equal(signingSecret, config.webhookSecrets.lex_canonical);
+      return fail
+        ? { ok: false, retryable: true, status: 503 }
+        : { ok: true, retryable: false, status: 200 };
+    }
+    assert.equal(signingSecret, config.webhookSecrets.wallet);
+    return { ok: true, processed: true, retryable: false, status: 200 };
+  });
+  assert.equal(sent.length, 0);
+  await worker.tick();
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 1);
+  const delivery = (
+    await db.query<{ id: string; status: string; attempts: number; next_attempt_at: Date }>(
+      'SELECT * FROM lex.deliveries WHERE destination_id=$1',
+      [target.id],
+    )
+  ).rows[0]!;
+  assert.equal(delivery.status, 'retrying');
+  assert.equal(delivery.attempts, 1);
+  assert.ok(delivery.next_attempt_at.getTime() > Date.now());
+  assert.deepEqual(sent.find((x) => x.id !== delivery.id)!.envelope, original.envelope);
+  assert.equal(
+    (await db.query('SELECT status FROM lex.deliveries WHERE destination_id=$1', [legacyTarget.id]))
+      .rows[0]!.status,
+    'processed',
+  );
+  const cancellation = await call(
+    'POST',
+    `/api/v1/shipments/${created.shipment.shipment_id}/cancel`,
+    {
+      command_id: randomUUID(),
+      expected_version: 1,
+      correlation_id: 'corr-cancel',
+      reason: 'Test cancellation',
+    },
+    merchantActor,
+    'statelines-merchant',
+  );
+  assert.equal(cancellation.statusCode, 200, cancellation.body);
+  fail = false;
+  await db.query('UPDATE lex.deliveries SET next_attempt_at=now()');
+  await worker.tick();
+  const retries = sent.filter((x) => x.id === delivery.id);
+  assert.equal(retries.length, 2);
+  assert.deepEqual(retries[0]!.envelope, canonical);
+  assert.deepEqual(retries[1]!.envelope, canonical);
+  const cancellationEvent = sent.find(
+    (x) => x.envelope.event_type === 'shipment.cancelled',
+  )!.envelope;
+  assert.equal(cancellationEvent.correlation_id, 'corr-cancel');
+  assert.equal((cancellationEvent.shipment as { version: number }).version, 2);
+  assert.equal((canonical.shipment as { status: string }).status, 'created');
+  assert.equal(
+    (await db.query('SELECT status,version FROM lex.shipments')).rows[0]!.status,
+    'cancelled',
+  );
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 2); // Creation + genuine cancellation, never retry events.
+  assert.deepEqual(await createMerchant(body), created);
+  assert.equal(await count('outbox'), 2);
+  const outcome = (
+    await db.query('SELECT status,attempts,accepted_at FROM lex.deliveries WHERE id=$1', [
+      delivery.id,
+    ])
+  ).rows[0]!;
+  assert.equal(outcome.status, 'accepted');
+  assert.equal(outcome.attempts, 2);
+  assert.ok(outcome.accepted_at);
+  const attempts = (
+    await db.query(
+      'SELECT http_status,outcome FROM lex.delivery_attempts WHERE delivery_id=$1 ORDER BY attempt',
+      [delivery.id],
+    )
+  ).rows;
+  assert.deepEqual(attempts, [
+    { http_status: 503, outcome: 'retrying' },
+    { http_status: 200, outcome: 'accepted' },
+  ]);
+});
+
+test('canonical lifecycle snapshots cover assignment, status changes and delivery with stable Merchant references', async () => {
+  await canonicalDestination({ active: true });
+  const created = await createMerchant();
+  await createCarrier();
+  const match = await call('POST', `/v1/shipments/${created.shipment.id}/match`, {
+    command_id: randomUUID(),
+    expected_version: 1,
+  });
+  assert.equal(match.statusCode, 200, match.body);
+  let current = match.json();
+  for (const status of ['picked_up', 'in_transit', 'out_for_delivery', 'delivered'])
+    current = await transition(current, status);
+  const received: Record<string, unknown>[] = [];
+  const worker = new DeliveryWorker(db, config, async (_url, _key, envelope) => {
+    received.push(envelope);
+    return { ok: true, processed: true, retryable: false, status: 200 };
+  });
+  await worker.tick();
+  received.sort(
+    (a, b) =>
+      (a.shipment as { version: number }).version - (b.shipment as { version: number }).version,
+  );
+  assert.deepEqual(
+    received.map((e) => e.event_type),
+    [
+      'shipment.created',
+      'shipment.assigned',
+      'shipment.status_changed',
+      'shipment.status_changed',
+      'shipment.status_changed',
+      'shipment.delivered',
+    ],
+  );
+  for (const [i, event] of received.entries()) {
+    const snapshot = event.shipment as Record<string, unknown>;
+    assert.equal(snapshot.version, i + 1);
+    assert.equal(snapshot.merchant_id, 'statelines-merchant');
+    assert.equal(snapshot.order_id, 'STL-ORDER-1');
+    assert.equal(event.correlation_id, 'corr-merchant-1');
+    assert.equal(snapshot.shipment_id, created.shipment.shipment_id);
+  }
+});
+
+test('canonical delivery dead-letters and explicit replay reuses the same event and Shipment', async () => {
+  await canonicalDestination({ active: true });
+  await createMerchant();
+  const events: Record<string, unknown>[] = [];
+  let succeed = false;
+  const worker = new DeliveryWorker(db, config, async (_url, _key, envelope) => {
+    events.push(structuredClone(envelope));
+    return succeed
+      ? { ok: true, processed: true, retryable: false, status: 200 }
+      : { ok: false, retryable: true, status: 500 };
+  });
+  for (let i = 0; i < 4; i++) {
+    await db.query('UPDATE lex.deliveries SET next_attempt_at=now()');
+    await worker.tick();
+  }
+  const d = (await db.query('SELECT id,status FROM lex.deliveries')).rows[0]!;
+  assert.equal(d.status, 'dead_letter');
+  assert.equal(events.length, config.maxAttempts);
+  succeed = true;
+  assert.equal(
+    (
+      await call('POST', `/v1/deliveries/${d.id}/replay`, {
+        command_id: randomUUID(),
+        note: 'Test receiver recovered',
+      })
+    ).statusCode,
+    200,
+  );
+  await worker.tick();
+  for (const event of events) assert.deepEqual(event, events[0]);
+  assert.equal(await count('shipments'), 1);
+  assert.equal(await count('outbox'), 1);
+  assert.equal(await count('deliveries'), 1);
+  assert.equal(await count('delivery_attempts'), 4);
+  assert.equal(
+    (await db.query('SELECT status,replay_count FROM lex.deliveries')).rows[0]!.status,
+    'processed',
+  );
+});
+
+test('pre-upgrade events are not reconstructed or sent to canonical destinations, including explicit backfill', async () => {
+  const target = await canonicalDestination({ active: true });
+  await destination();
+  const s = await createShipment();
+  // Disposable fixture represents an event written by the previous application version.
+  await db.query('UPDATE lex.outbox SET canonical_envelope=NULL WHERE aggregate_id=$1', [s.id]);
+  const received: string[] = [];
+  const worker = new DeliveryWorker(db, config, async (url) => {
+    received.push(url);
+    return { ok: true, retryable: false, status: 200 };
+  });
+  await worker.tick();
+  assert.deepEqual(received, ['https://receiver.example.com/lex']);
+  const backfill = await call('POST', `/v1/destinations/${target.id}/backfill`, {
+    command_id: randomUUID(),
+    from: inHours(-1),
+    to: inHours(1),
+  });
+  assert.equal(backfill.statusCode, 200, backfill.body);
+  assert.equal(backfill.json().created, 0);
+  assert.equal(
+    (
+      await db.query('SELECT count(*)::int AS n FROM lex.deliveries WHERE destination_id=$1', [
+        target.id,
+      ])
+    ).rows[0]!.n,
+    0,
+  );
+  assert.equal(
+    (await db.query('SELECT canonical_envelope FROM lex.outbox')).rows[0]!.canonical_envelope,
+    null,
+  );
+  assert.equal((await db.query('SELECT status,version FROM lex.shipments')).rows[0]!.version, 1);
 });
