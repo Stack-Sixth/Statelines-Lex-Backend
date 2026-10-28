@@ -80,6 +80,33 @@ jobs:
           if (!connected) throw new Error('PostgreSQL 17 did not become ready within 30 seconds');
           process.stdout.write('PostgreSQL 17 is ready\n');
           NODE
+      - name: Assert PostgreSQL 17 and independent database sessions
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import pg from 'pg';
+          const url = new URL(process.env.TEST_DATABASE_URL);
+          assert.equal(url.hostname, 'localhost');
+          assert.equal(url.pathname, '/lex_test');
+          assert.equal(process.env.DATABASE_URL, process.env.TEST_DATABASE_URL);
+          const pool = new pg.Pool({ connectionString: url.href, max: 2, connectionTimeoutMillis: 5000 });
+          let first;
+          let second;
+          try {
+            first = await pool.connect();
+            second = await pool.connect();
+            const query = "SELECT pg_backend_pid() AS pid, current_setting('server_version_num')::int AS version";
+            const [a, b] = await Promise.all([first.query(query), second.query(query)]);
+            assert.equal(Math.floor(a.rows[0].version / 10000), 17);
+            assert.equal(Math.floor(b.rows[0].version / 10000), 17);
+            assert.notEqual(a.rows[0].pid, b.rows[0].pid);
+            console.log('Verified PostgreSQL 17 with two independent concurrent sessions');
+          } finally {
+            first?.release();
+            second?.release();
+            await pool.end();
+          }
+          NODE
       - name: Create existing 001-002 installation using Render migration runner
         shell: bash
         run: |
