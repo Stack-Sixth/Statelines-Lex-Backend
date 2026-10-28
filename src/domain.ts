@@ -7,6 +7,7 @@ export interface Actor {
   id: string;
   role: Role;
   clientId: string;
+  merchantId?: string;
 }
 export class AppError extends Error {
   constructor(
@@ -172,8 +173,9 @@ export async function emit(
   if (canonicalShipmentTypes.includes(eventType)) {
     const snapshot = (
       await sql.query(
-        `SELECT s.*,r.merchant_id,r.order_id,r.external_shipment_id
+        `SELECT s.*,COALESCE(ms.merchant_id,r.merchant_id) AS merchant_id,r.order_id,r.external_shipment_id
          FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id
+         LEFT JOIN merchant.shipment_scopes ms ON ms.shipment_id=s.id
          WHERE s.id=$1`,
         [shipment.id],
       )

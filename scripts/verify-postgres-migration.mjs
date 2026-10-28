@@ -120,6 +120,7 @@ async function verify() {
     '002_domain_foundation.sql',
     '003_merchant_shipment_integration.sql',
     '004_canonical_webhook_delivery.sql',
+    '005_merchant_authorization.sql',
   ]) {
     const count = await pool.query(
       'SELECT count(*)::int AS count FROM lex.schema_migrations WHERE name=$1',
@@ -151,6 +152,19 @@ async function verify() {
     (await pool.query('SELECT count(*)::int AS count FROM lex.deliveries')).rows[0].count,
     0,
   );
+  for (const table of ['accounts', 'service_clients', 'client_subjects', 'shipment_scopes']) {
+    assert.equal(
+      (await pool.query(`SELECT count(*)::int AS count FROM merchant.${table}`)).rows[0].count,
+      0,
+      'No inferred merchant provisioning or legacy reassignment',
+    );
+    const rls = (
+      await pool.query('SELECT relrowsecurity FROM pg_class WHERE oid=$1::regclass', [
+        `merchant.${table}`,
+      ])
+    ).rows[0];
+    assert.equal(rls.relrowsecurity, true);
+  }
   const referenceRelation = await pool.query(
     "SELECT to_regclass('lex.merchant_shipment_refs') AS relation",
   );

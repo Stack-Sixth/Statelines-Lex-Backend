@@ -14,6 +14,7 @@ import {
   commandFields,
   requireRole,
   uuid,
+  statuses,
   type Actor,
 } from './domain.js';
 import {
@@ -47,7 +48,7 @@ export async function buildApp(db: Database, config: Config) {
   app.addHook('onRequest', async (req) => {
     const route = req.routeOptions.url;
     if (req.method === 'GET' && (route === '/health/live' || route === '/health/ready')) return;
-    req.actor = await authenticate(req.headers.authorization, config);
+    req.actor = await authenticate(req.headers.authorization, config, db);
   });
   await app.register(rateLimit, {
     max: 120,
@@ -108,9 +109,16 @@ export async function buildApp(db: Database, config: Config) {
     reply.code(201).send(await service.create(req.actor, createShipmentSchema.parse(req.body))),
   );
   app.get('/v1/shipments', async (req) => {
-    const p = paging.parse(req.query);
-    const rows = await service.list(req.actor, p.after, p.limit);
-    return { items: rows, next_cursor: rows.length === p.limit ? rows.at(-1)!.id : null };
+    const p = paging
+      .extend({
+        status: z.enum(statuses).optional(),
+        order_id: z.string().min(1).max(200).optional(),
+        merchant_id: z.string().min(1).max(200).optional(),
+      })
+      .parse(req.query);
+    const rows = await service.list(req.actor, p.after, p.limit + 1, p);
+    const items = rows.slice(0, p.limit);
+    return { items, next_cursor: rows.length > p.limit ? items.at(-1)!.id : null };
   });
   app.get('/v1/shipments/:id', async (req) => service.get(req.actor, idOf(req.params)));
   app.post('/v1/shipments/:id/match', async (req) =>

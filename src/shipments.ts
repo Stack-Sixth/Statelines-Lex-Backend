@@ -1,3 +1,4 @@
+import { assertMerchantShipment, merchantScope, shipmentAccess } from './merchant-authorization.js';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Database, Sql } from './db.js';
@@ -144,6 +145,15 @@ export function shipmentService(db: Database) {
       const owner = input.owner_user_id || actor.id;
       if (actor.role === 'merchant' && owner !== actor.id)
         throw new AppError(403, 'forbidden', 'Cannot create a shipment for another user');
+      if (actor.role === 'merchant') {
+        const scope = merchantScope(actor);
+        if (merchantReference && merchantReference.merchant_id !== scope)
+          throw new AppError(
+            403,
+            'merchant_scope_mismatch',
+            'Merchant does not match the authorized scope',
+          );
+      }
       const action = merchantReference ? 'merchant.shipment.create' : 'shipment.create';
       const commandInput = merchantReference
         ? { shipment: input, merchant_reference: merchantReference }
@@ -169,6 +179,11 @@ export function shipmentService(db: Database) {
             ],
           )
         ).rows[0]!;
+        if (actor.role === 'merchant')
+          await sql.query(
+            'INSERT INTO merchant.shipment_scopes(shipment_id,merchant_id) VALUES($1,$2)',
+            [id, merchantScope(actor)],
+          );
         if (merchantReference)
           await sql.query(
             'INSERT INTO lex.merchant_shipment_refs(shipment_id,merchant_id,order_id,external_shipment_id,correlation_id,created_by,command_id) VALUES($1,$2,$3,$4,$5,$6,$7)',
@@ -231,17 +246,8 @@ export function shipmentService(db: Database) {
         'merchant.shipment.cancel',
         { id, ...input },
         async (sql) => {
-          const reference = (
-            await sql.query<{ merchant_id: string }>(
-              'SELECT merchant_id FROM lex.merchant_shipment_refs WHERE shipment_id=$1 FOR SHARE',
-              [id],
-            )
-          ).rows[0];
-          if (!reference || reference.merchant_id !== actor.clientId)
-            throw new AppError(404, 'not_found', 'Shipment not found');
+          await assertMerchantShipment(sql, actor, id);
           const shipment = await lockedShipment(sql, id, input.expected_version);
-          if (shipment.owner_user_id !== actor.id)
-            throw new AppError(404, 'not_found', 'Shipment not found');
           if (shipment.status === 'cancelled')
             throw new AppError(409, 'already_cancelled', 'Shipment is already cancelled');
           if (!['created', 'matched'].includes(shipment.status))
@@ -430,14 +436,11 @@ export function shipmentService(db: Database) {
         'shipment.transition',
         { id, ...input },
         async (sql) => {
+          if (actor.role === 'merchant') await assertMerchantShipment(sql, actor, id);
           const s = await lockedShipment(sql, id, input.expected_version);
           const nextStatus = input.status;
           if (actor.role === 'merchant') {
-            if (
-              s.owner_user_id !== actor.id ||
-              nextStatus !== 'cancelled' ||
-              !['created', 'matched'].includes(s.status)
-            )
+            if (nextStatus !== 'cancelled' || !['created', 'matched'].includes(s.status))
               throw new AppError(
                 403,
                 'forbidden',
@@ -610,8 +613,8 @@ export function shipmentService(db: Database) {
     async get(actor: Actor, id: string) {
       const s = (
         await db.query<Shipment>(
-          `SELECT s.* FROM lex.shipments s WHERE id=$1 AND ($2 IN ('admin','operator') OR ($2='merchant' AND owner_user_id=$3) OR ($2='carrier' AND EXISTS(SELECT 1 FROM lex.carriers c WHERE c.id=s.assigned_carrier_id AND c.user_id=$3)))`,
-          [id, actor.role, actor.id],
+          `SELECT s.* FROM lex.shipments s WHERE ${shipmentAccess} AND s.id=$4`,
+          [actor.role, actor.id, actor.role === 'merchant' ? merchantScope(actor) : null, id],
         )
       ).rows[0];
       if (!s) throw new AppError(404, 'not_found', 'Shipment not found');
@@ -621,11 +624,39 @@ export function shipmentService(db: Database) {
       );
       return { shipment: s, history: events.rows };
     },
-    async list(actor: Actor, after: string | undefined, limit: number) {
+    async list(
+      actor: Actor,
+      after: string | undefined,
+      limit: number,
+      filters: { status?: string; order_id?: string; merchant_id?: string } = {},
+    ) {
+      const scope = actor.role === 'merchant' ? merchantScope(actor) : null;
+      if (scope && filters.merchant_id && filters.merchant_id !== scope)
+        throw new AppError(
+          403,
+          'merchant_scope_mismatch',
+          'Merchant does not match the authorized scope',
+        );
+      if (actor.role === 'merchant' && after) await assertMerchantShipment(db, actor, after);
       return (
         await db.query(
-          `SELECT s.* FROM lex.shipments s WHERE ($1 IN ('admin','operator') OR ($1='merchant' AND owner_user_id=$2) OR ($1='carrier' AND EXISTS(SELECT 1 FROM lex.carriers c WHERE c.id=s.assigned_carrier_id AND c.user_id=$2))) AND ($3::uuid IS NULL OR s.id>$3) ORDER BY s.id LIMIT $4`,
-          [actor.role, actor.id, after || null, limit],
+          `SELECT s.* FROM lex.shipments s WHERE ${shipmentAccess}
+          AND ($4::uuid IS NULL OR s.id>$4)
+          AND ($6::text IS NULL OR s.status=$6)
+          AND ($7::text IS NULL OR EXISTS(SELECT 1 FROM lex.merchant_shipment_refs r WHERE r.shipment_id=s.id AND r.order_id=$7 AND ($3::text IS NULL OR r.merchant_id=$3)))
+          AND ($8::text IS NULL OR EXISTS(SELECT 1 FROM merchant.shipment_scopes ms WHERE ms.shipment_id=s.id AND ms.merchant_id=$8)
+            OR EXISTS(SELECT 1 FROM lex.merchant_shipment_refs r WHERE r.shipment_id=s.id AND r.merchant_id=$8))
+          ORDER BY s.id LIMIT $5`,
+          [
+            actor.role,
+            actor.id,
+            scope,
+            after || null,
+            limit,
+            filters.status || null,
+            filters.order_id || null,
+            filters.merchant_id || null,
+          ],
         )
       ).rows;
     },

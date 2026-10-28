@@ -12,6 +12,8 @@ import { configFromEnv, type Config, type Role } from '../src/config.js';
 import { DeliveryWorker } from '../src/delivery.js';
 import { publicAddress, signature, verifySignature, validateEndpoint } from '../src/webhooks.js';
 const secret = 'test-only-secret-'.repeat(4);
+const merchantIdA = 'MER_10000000000040008000000000000001';
+const merchantIdB = 'MER_10000000000040008000000000000002';
 const config: Config = {
   domainReadApiEnabled: true,
   databaseUrl: process.env.TEST_DATABASE_URL || 'postgresql://unused',
@@ -37,6 +39,7 @@ let db: Database;
 let app: Awaited<ReturnType<typeof buildApp>>;
 const admin = { role: 'admin' as Role, id: 'admin-1' };
 async function token(actor = admin, client = 'test') {
+  if (actor.role === 'merchant' && client === 'test') client = 'statelines-merchant';
   const cfg = config.clients.find((c) => c.id === client)!;
   return new SignJWT({ role: actor.role })
     .setProtectedHeader({ alg: 'HS256' })
@@ -76,7 +79,7 @@ const shipBody = () => ({
 const merchantActor = { role: 'merchant' as Role, id: 'merchant-user-1' };
 const merchantShipmentBody = (overrides = {}) => ({
   command_id: randomUUID(),
-  merchant_id: 'statelines-merchant',
+  merchant_id: merchantIdA,
   order_id: 'STL-ORDER-1',
   external_shipment_id: 'merchant-local-shipment-1',
   correlation_id: 'corr-merchant-1',
@@ -190,6 +193,7 @@ before(async () => {
   await db.query(await readFile('migrations/002_domain_foundation.sql', 'utf8'));
   await db.query(await readFile('migrations/003_merchant_shipment_integration.sql', 'utf8'));
   await db.query(await readFile('migrations/004_canonical_webhook_delivery.sql', 'utf8'));
+  await db.query(await readFile('migrations/005_merchant_authorization.sql', 'utf8'));
   app = await buildApp(db, config);
 });
 after(async () => {
@@ -201,8 +205,26 @@ beforeEach(async () => {
   await app?.close();
   app = await buildApp(db, config);
   await db.query(
-    'TRUNCATE lex.delivery_attempts,lex.deliveries,lex.destinations,lex.outbox,lex.audit_log,lex.wallet_approvals,lex.shipment_history,lex.shipments,lex.carriers,lex.commands,lex.worker_heartbeats CASCADE',
+    'TRUNCATE lex.delivery_attempts,lex.deliveries,lex.destinations,lex.outbox,lex.audit_log,lex.wallet_approvals,lex.shipment_history,lex.shipments,lex.carriers,lex.commands,lex.worker_heartbeats,merchant.accounts CASCADE',
   );
+  for (const [id, client] of [
+    [merchantIdA, 'statelines-merchant'],
+    [merchantIdB, 'statelines-other-merchant'],
+  ]) {
+    await db.query(
+      'INSERT INTO merchant.accounts(merchant_id,name,external_reference) VALUES($1,$2,$2)',
+      [id, client],
+    );
+    await db.query('INSERT INTO merchant.service_clients(client_id,merchant_id) VALUES($1,$2)', [
+      client,
+      id,
+    ]);
+    for (const subject of ['merchant-user-1', 'merchant-1', 'other', 'stranger'])
+      await db.query('INSERT INTO merchant.client_subjects(client_id,subject_id) VALUES($1,$2)', [
+        client,
+        subject,
+      ]);
+  }
 });
 test('health is available, business endpoints require authentication', async () => {
   assert.equal((await app.inject('/health/ready')).statusCode, 200);
@@ -754,7 +776,7 @@ test('canonical IDs round-trip full UUIDs and reject wrong entity prefixes', () 
   assert.throws(() => internalId('shipment', 'SHP_123'));
 });
 
-test('canonical reads preserve legacy IDs, ownership and unchanged command retry results', async () => {
+test('canonical reads preserve legacy IDs and retries without inventing merchant ownership', async () => {
   const body = shipBody();
   const original = await call('POST', '/v1/shipments', body);
   const s = original.json();
@@ -780,7 +802,7 @@ test('canonical reads preserve legacy IDs, ownership and unchanged command retry
     id: 'merchant-1',
     role: 'merchant',
   });
-  assert.equal(own.statusCode, 200);
+  assert.equal(own.statusCode, 404); // Legacy owner matches sub but no verified tenant assignment exists.
   const repeated = await call('POST', '/v1/shipments', body);
   assert.deepEqual(repeated.json(), s);
   const view = (
@@ -794,10 +816,10 @@ test('canonical reads preserve legacy IDs, ownership and unchanged command retry
 });
 
 test('canonical pagination is bounded, role scoped and has reusable cursors', async () => {
-  await createShipment();
-  await createShipment();
-  await createShipment({ owner_user_id: 'other' });
   const actor = { id: 'merchant-1', role: 'merchant' as Role };
+  for (let i = 0; i < 2; i++)
+    assert.equal((await call('POST', '/v1/shipments', shipBody(), actor)).statusCode, 201);
+  await createShipment({ owner_user_id: 'other' });
   const first = await call('GET', '/api/v1/shipments?limit=1', undefined, actor);
   assert.equal(first.statusCode, 200);
   assert.equal(first.json().items.length, 1);
@@ -1027,7 +1049,7 @@ test('Merchant creation stores external order references and is idempotent under
   assert.match(shipment.tracking_id, /^LEX-/);
   assert.equal(shipment.version, 1);
   assert.equal(shipment.status, 'created');
-  assert.equal(shipment.merchant_id, 'statelines-merchant');
+  assert.equal(shipment.merchant_id, merchantIdA);
   assert.equal(shipment.order_id, body.order_id);
   assert.equal(shipment.external_shipment_id, body.external_shipment_id);
   assert.equal(shipment.correlation_id, body.correlation_id);
@@ -1100,7 +1122,7 @@ test('Merchant canonical reads return references and isolate shipment owners', a
   );
   assert.equal(own.statusCode, 200);
   assert.equal(own.json().shipment.order_id, body.order_id);
-  assert.equal(own.json().shipment.merchant_id, 'statelines-merchant');
+  assert.equal(own.json().shipment.merchant_id, merchantIdA);
   assert.equal(own.json().shipment.tracking_id, created.json().shipment.tracking_id);
   assert.equal(own.json().shipment.version, 1);
   const other = await call(
@@ -1110,7 +1132,8 @@ test('Merchant canonical reads return references and isolate shipment owners', a
     { id: 'merchant-user-2', role: 'merchant' },
     'statelines-merchant',
   );
-  assert.equal(other.statusCode, 404);
+  assert.equal(other.statusCode, 403);
+  assert.equal(other.json().error.code, 'MERCHANT_SUBJECT_FORBIDDEN');
   const otherMerchant = await call(
     'GET',
     `/api/v1/shipments/${id}`,
@@ -1531,7 +1554,7 @@ test('canonical lifecycle snapshots cover assignment, status changes and deliver
   for (const [i, event] of received.entries()) {
     const snapshot = event.shipment as Record<string, unknown>;
     assert.equal(snapshot.version, i + 1);
-    assert.equal(snapshot.merchant_id, 'statelines-merchant');
+    assert.equal(snapshot.merchant_id, merchantIdA);
     assert.equal(snapshot.order_id, 'STL-ORDER-1');
     assert.equal(event.correlation_id, i === 0 ? 'corr-merchant-1' : created.shipment.id);
     assert.equal(snapshot.shipment_id, created.shipment.shipment_id);
@@ -1611,4 +1634,325 @@ test('pre-upgrade events are not reconstructed or sent to canonical destinations
     null,
   );
   assert.equal((await db.query('SELECT status,version FROM lex.shipments')).rows[0]!.version, 1);
+});
+
+test('provisioning is admin-only, idempotent, immutable and revocable by version', async () => {
+  const body = {
+    command_id: randomUUID(),
+    name: 'New Merchant',
+    external_reference: 'base44:verified-business',
+  };
+  assert.equal((await call('POST', '/api/v1/merchants', body, merchantActor)).statusCode, 403);
+  const provision = await call('POST', '/api/v1/merchants', body);
+  assert.equal(provision.statusCode, 201, provision.body);
+  assert.deepEqual((await call('POST', '/api/v1/merchants', body)).json(), provision.json());
+  const id = provision.json().merchant.merchant_id;
+  assert.match(id, /^MER_[0-9a-f]{32}$/);
+  await db.query('DELETE FROM merchant.client_subjects WHERE client_id=$1', [
+    'statelines-other-merchant',
+  ]);
+  await db.query('DELETE FROM merchant.service_clients WHERE client_id=$1', [
+    'statelines-other-merchant',
+  ]);
+  const bind = {
+    command_id: randomUUID(),
+    client_id: 'statelines-other-merchant',
+    subjects: ['approved-user'],
+  };
+  assert.equal(
+    (await call('POST', `/api/v1/merchants/${id}/service-clients`, bind)).statusCode,
+    201,
+  );
+  assert.equal(
+    (await call('POST', `/api/v1/merchants/${id}/service-clients`, bind)).statusCode,
+    201,
+  );
+  assert.equal(
+    (
+      await call('POST', `/api/v1/merchants/${merchantIdA}/service-clients`, {
+        ...bind,
+        command_id: randomUUID(),
+      })
+    ).statusCode,
+    409,
+  );
+  const approved = { role: 'merchant' as Role, id: 'approved-user' };
+  const context = await call(
+    'GET',
+    '/api/v1/merchant-context',
+    undefined,
+    approved,
+    bind.client_id,
+  );
+  assert.equal(context.json().merchant_id, id);
+  assert.equal(
+    (await call('GET', '/api/v1/merchant-context', undefined, merchantActor, bind.client_id))
+      .statusCode,
+    403,
+  );
+  const change = {
+    command_id: randomUUID(),
+    expected_version: 1,
+    active: false,
+    subjects: ['approved-user'],
+  };
+  assert.equal(
+    (await call('POST', `/api/v1/merchant-service-clients/${bind.client_id}/authorization`, change))
+      .statusCode,
+    200,
+  );
+  const revoked = await call(
+    'GET',
+    '/api/v1/merchant-context',
+    undefined,
+    approved,
+    bind.client_id,
+  );
+  assert.equal(revoked.json().error.code, 'MERCHANT_CLIENT_REVOKED');
+  assert.equal(
+    (
+      await call('POST', `/api/v1/merchant-service-clients/${bind.client_id}/authorization`, {
+        ...change,
+        command_id: randomUUID(),
+      })
+    ).statusCode,
+    409,
+  );
+});
+
+test('both API generations isolate merchants sharing a subject and order, including cursors and mutations', async () => {
+  const bodyA = merchantShipmentBody({ merchant_id: undefined });
+  const a = await call('POST', '/api/v1/shipments', bodyA, merchantActor);
+  assert.equal(a.statusCode, 201, a.body);
+  const bodyB = { ...bodyA, command_id: randomUUID() };
+  const b = await call(
+    'POST',
+    '/api/v1/shipments',
+    bodyB,
+    merchantActor,
+    'statelines-other-merchant',
+  );
+  assert.equal(b.statusCode, 201, b.body);
+  const aid = a.json().shipment.shipment_id;
+  const bid = b.json().shipment.shipment_id;
+  const uuidB = internalId('shipment', bid);
+  for (const path of [
+    `/api/v1/shipments/${bid}`,
+    `/api/v1/shipments/${bid}/cancellable`,
+    `/v1/shipments/${uuidB}`,
+    `/api/v1/shipments?after=${bid}`,
+    `/v1/shipments?after=${uuidB}`,
+  ]) {
+    assert.equal((await call('GET', path, undefined, merchantActor)).statusCode, 404, path);
+  }
+  for (const prefix of ['/v1', '/api/v1']) {
+    const list = await call(
+      'GET',
+      `${prefix}/shipments?order_id=STL-ORDER-1&status=created&limit=1`,
+      undefined,
+      merchantActor,
+    );
+    assert.equal(list.statusCode, 200, list.body);
+    assert.equal(list.json().items.length, 1);
+    assert.equal(list.json().next_cursor, null);
+    assert.equal(
+      (
+        await call(
+          'GET',
+          `${prefix}/shipments?merchant_id=${merchantIdB}`,
+          undefined,
+          merchantActor,
+        )
+      ).statusCode,
+      403,
+    );
+    assert.equal(
+      (await call('GET', `${prefix}/shipments?status=delivered`, undefined, merchantActor)).json()
+        .items.length,
+      0,
+    );
+  }
+  assert.equal(
+    (
+      await call(
+        'POST',
+        `/api/v1/shipments/${bid}/cancel`,
+        { command_id: randomUUID(), expected_version: 999, correlation_id: 'x', reason: 'test' },
+        merchantActor,
+      )
+    ).statusCode,
+    404,
+  );
+  assert.equal(
+    (
+      await call(
+        'POST',
+        `/v1/shipments/${uuidB}/transitions`,
+        { command_id: randomUUID(), expected_version: 999, status: 'cancelled' },
+        merchantActor,
+      )
+    ).statusCode,
+    404,
+  );
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', bodyA, merchantActor, 'statelines-other-merchant'))
+      .statusCode,
+    409,
+  );
+  assert.equal(
+    (await call('POST', '/api/v1/shipments', { ...bodyA, command_id: randomUUID() }, merchantActor))
+      .statusCode,
+    409,
+  );
+  assert.equal(
+    (await call('GET', `/api/v1/shipments/${aid}`, undefined, { role: 'merchant', id: 'other' }))
+      .statusCode,
+    200,
+  );
+  const retry = await call('POST', '/api/v1/shipments', bodyA, merchantActor);
+  assert.deepEqual(retry.json(), a.json());
+  assert.equal((await db.query('SELECT * FROM merchant.shipment_scopes')).rowCount, 2);
+});
+
+test('merchant authentication rejects forged scope, wrong signatures, unknown subjects and missing bindings', async () => {
+  for (const claims of [
+    { merchant_id: merchantIdB },
+    { scope: merchantIdB },
+    { owner_user_id: 'admin-1' },
+  ]) {
+    const jwt = await new SignJWT({ role: 'merchant', ...claims })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer('statelines-merchant')
+      .setAudience('statelines-lex')
+      .setSubject(merchantActor.id)
+      .setIssuedAt()
+      .setExpirationTime('2m')
+      .sign(new TextEncoder().encode(secret + 'merchant'));
+    assert.equal(
+      (
+        await app.inject({
+          method: 'GET',
+          url: '/api/v1/merchant-context',
+          headers: { authorization: `Bearer ${jwt}` },
+        })
+      ).statusCode,
+      401,
+    );
+  }
+  const forged = await new SignJWT({ role: 'merchant' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer('statelines-other-merchant')
+    .setAudience('statelines-lex')
+    .setSubject(merchantActor.id)
+    .setIssuedAt()
+    .setExpirationTime('2m')
+    .sign(new TextEncoder().encode(secret + 'merchant'));
+  assert.equal(
+    (
+      await app.inject({
+        method: 'GET',
+        url: '/api/v1/merchant-context',
+        headers: { authorization: `Bearer ${forged}` },
+      })
+    ).statusCode,
+    401,
+  );
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/api/v1/shipments',
+        merchantShipmentBody({ merchant_id: merchantIdB }),
+        merchantActor,
+      )
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/api/v1/shipments',
+        merchantShipmentBody({ owner_user_id: 'other' }),
+        merchantActor,
+      )
+    ).statusCode,
+    400,
+  );
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/v1/shipments',
+        { ...shipBody(), merchant_id: merchantIdB },
+        merchantActor,
+      )
+    ).statusCode,
+    400,
+  );
+  assert.equal(
+    (
+      await call('GET', '/api/v1/merchant-context', undefined, {
+        role: 'merchant',
+        id: 'unapproved',
+      })
+    ).json().error.code,
+    'MERCHANT_SUBJECT_FORBIDDEN',
+  );
+  await db.query('DELETE FROM merchant.client_subjects WHERE client_id=$1', [
+    'statelines-merchant',
+  ]);
+  await db.query('DELETE FROM merchant.service_clients WHERE client_id=$1', [
+    'statelines-merchant',
+  ]);
+  assert.equal(
+    (await call('GET', '/api/v1/merchant-context', undefined, merchantActor)).json().error.code,
+    'MERCHANT_NOT_PROVISIONED',
+  );
+});
+
+test('merchant pagination, concurrent retries and account suspension preserve the tenant boundary', async () => {
+  const body = merchantShipmentBody();
+  const retries = await Promise.all([
+    call('POST', '/api/v1/shipments', body, merchantActor),
+    call('POST', '/api/v1/shipments', body, merchantActor),
+  ]);
+  assert.equal(retries[0]!.statusCode, 201, retries[0]!.body);
+  assert.deepEqual(retries[0]!.json(), retries[1]!.json());
+  const second = await call(
+    'POST',
+    '/v1/shipments',
+    { ...shipBody(), owner_user_id: merchantActor.id },
+    merchantActor,
+  );
+  assert.equal(second.statusCode, 201, second.body);
+  for (const prefix of ['/v1', '/api/v1']) {
+    const firstPage = (
+      await call('GET', `${prefix}/shipments?limit=1`, undefined, merchantActor)
+    ).json();
+    assert.equal(firstPage.items.length, 1);
+    assert.ok(firstPage.next_cursor);
+    const nextPage = (
+      await call(
+        'GET',
+        `${prefix}/shipments?limit=1&after=${firstPage.next_cursor}`,
+        undefined,
+        merchantActor,
+      )
+    ).json();
+    assert.equal(nextPage.items.length, 1);
+    assert.equal(nextPage.next_cursor, null);
+    assert.notDeepEqual(firstPage.items, nextPage.items);
+  }
+  const status = await call('POST', `/api/v1/merchants/${merchantIdA}/status`, {
+    command_id: randomUUID(),
+    expected_version: 1,
+    active: false,
+  });
+  assert.equal(status.statusCode, 200, status.body);
+  assert.equal(
+    (await call('GET', '/api/v1/shipments', undefined, merchantActor)).json().error.code,
+    'MERCHANT_INACTIVE',
+  );
+  assert.equal((await call('GET', '/v1/shipments')).json().items.length, 2);
 });

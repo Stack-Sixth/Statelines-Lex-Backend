@@ -1,8 +1,18 @@
+import { merchantApi } from './merchants.js';
+import { merchantScope } from '../merchant-authorization.js';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { Database } from '../db.js';
 import type { Config } from '../config.js';
-import { AppError, corridor, packageSize, requireRole, serviceLevel, uuid } from '../domain.js';
+import {
+  AppError,
+  corridor,
+  packageSize,
+  requireRole,
+  serviceLevel,
+  statuses,
+  uuid,
+} from '../domain.js';
 import { createShipmentSchema, shipmentService } from '../shipments.js';
 import { internalId, publicId } from '../domains/identifiers.js';
 import { eventNames, eventProjection, shipmentProjection } from '../domains/projections.js';
@@ -18,7 +28,7 @@ const locationSchema = z.object({ corridor }).strict();
 const merchantShipmentSchema = z
   .object({
     command_id: uuid,
-    merchant_id: z.string().trim().min(1).max(200),
+    merchant_id: z.string().trim().min(1).max(200).optional(),
     order_id: z.string().trim().min(1).max(200),
     external_shipment_id: z.string().trim().min(1).max(200).optional(),
     correlation_id: z.string().trim().min(1).max(200),
@@ -91,22 +101,13 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
     if (!ids.length) return new Map<string, Record<string, unknown>>();
     const rows = (
       await db.query<{ shipment_id: string } & Record<string, unknown>>(
-        'SELECT shipment_id,merchant_id,order_id,external_shipment_id,correlation_id FROM lex.merchant_shipment_refs WHERE shipment_id=ANY($1::uuid[])',
+        `SELECT s.id AS shipment_id,COALESCE(ms.merchant_id,r.merchant_id) AS merchant_id,r.order_id,r.external_shipment_id,r.correlation_id FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id LEFT JOIN merchant.shipment_scopes ms ON ms.shipment_id=s.id WHERE s.id=ANY($1::uuid[])`,
         [ids],
       )
     ).rows;
     return new Map(rows.map((row) => [row.shipment_id, row]));
   };
-  const ensureMerchantReference = (
-    actor: { role: string; clientId: string },
-    reference: Record<string, unknown> | undefined,
-  ) => {
-    // Legacy shipments have no Merchant reference; shipmentService.get has
-    // already enforced their owner_user_id. When a reference exists, enforce
-    // its stronger merchant-client boundary.
-    if (actor.role === 'merchant' && reference && reference.merchant_id !== actor.clientId)
-      throw new AppError(404, 'not_found', 'Shipment not found');
-  };
+  await merchantApi(app, db, config);
   app.get('/api/v1/capabilities', async () => ({
     api_version: 1,
     domain_reads: config.domainReadApiEnabled === true,
@@ -116,18 +117,15 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
   }));
   if (config.domainReadApiEnabled === true) {
     app.get('/api/v1/shipments', async (req) => {
-      const q = paging.parse(req.query);
+      const q = paging
+        .extend({
+          status: z.enum(statuses).optional(),
+          order_id: z.string().min(1).max(200).optional(),
+          merchant_id: z.string().min(1).max(200).optional(),
+        })
+        .parse(req.query);
       const after = q.after ? internalId('shipment', q.after) : undefined;
-      const rows = (
-        req.actor.role === 'merchant'
-          ? (
-              await db.query(
-                'SELECT s.* FROM lex.shipments s LEFT JOIN lex.merchant_shipment_refs r ON r.shipment_id=s.id WHERE s.owner_user_id=$2 AND (r.shipment_id IS NULL OR r.merchant_id=$1) AND ($3::uuid IS NULL OR s.id>$3) ORDER BY s.id LIMIT $4',
-                [req.actor.clientId, req.actor.id, after || null, q.limit + 1],
-              )
-            ).rows
-          : await service.list(req.actor, after, q.limit + 1)
-      ) as Array<Record<string, unknown>>;
+      const rows = await service.list(req.actor, after, q.limit + 1, q);
       const page = rows.slice(0, q.limit);
       const references = await referenceMap(page.map((row) => String(row.id)));
       const items = page.map((row) =>
@@ -143,7 +141,6 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
       const result = await service.get(req.actor, id);
       const references = await referenceMap([id]);
       const reference = references.get(id);
-      ensureMerchantReference(req.actor, reference);
       return {
         shipment: shipmentProjection(
           result.shipment as unknown as Record<string, unknown>,
@@ -155,8 +152,6 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
     app.get('/api/v1/shipments/:id/cancellable', async (req) => {
       const id = internalId('shipment', params.parse(req.params).id);
       const result = await service.get(req.actor, id);
-      const references = await referenceMap([id]);
-      ensureMerchantReference(req.actor, references.get(id));
       const status = result.shipment.status;
       const cancellable = ['created', 'matched'].includes(status);
       return {
@@ -201,9 +196,13 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
     app.post('/api/v1/shipments', async (req, reply) => {
       const b = merchantShipmentSchema.parse(req.body);
       requireRole(req.actor, 'merchant');
-      // The issuer comes from the verified JWT and configured API client, not the request.
-      if (b.merchant_id !== req.actor.clientId)
-        throw new AppError(403, 'forbidden', 'Merchant scope does not match this service client');
+      const scope = merchantScope(req.actor);
+      if (b.merchant_id && b.merchant_id !== scope)
+        throw new AppError(
+          403,
+          'merchant_scope_mismatch',
+          'Merchant does not match the authorized scope',
+        );
       const created = await service.create(
         req.actor,
         createShipmentSchema.parse({
@@ -218,7 +217,7 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
           delivery_deadline: b.delivery_deadline,
         }),
         {
-          merchant_id: b.merchant_id,
+          merchant_id: scope,
           order_id: b.order_id,
           external_shipment_id: b.external_shipment_id,
           correlation_id: b.correlation_id,
