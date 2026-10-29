@@ -25,6 +25,7 @@ export interface Config {
   maxAttempts: number;
   domainReadApiEnabled?: boolean;
   merchantDomainApiEnabled?: boolean;
+  syntheticBusinessIds?: string[];
 }
 export function configFromEnv(env = process.env): Config {
   const raw = z
@@ -50,6 +51,10 @@ export function configFromEnv(env = process.env): Config {
   if (env.NODE_ENV === 'production' && raw.DATABASE_SSL !== 'true')
     throw Error('Production requires verified database TLS');
   return {
+    syntheticBusinessIds: z
+      .array(z.string().min(1).max(200))
+      .max(2)
+      .parse(JSON.parse(env.SYNTHETIC_BUSINESS_IDS_JSON || '[]')),
     domainReadApiEnabled: raw.DOMAIN_READ_API_ENABLED === 'true',
     merchantDomainApiEnabled: raw.MERCHANT_DOMAIN_API_ENABLED === 'true',
     databaseUrl: raw.DATABASE_URL,

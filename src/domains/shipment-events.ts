@@ -15,6 +15,7 @@ export function canonicalShipmentEvent(
 ) {
   const event = eventProjection(envelope);
   return {
+    ...(s.sandbox_isolated === true ? { sandbox_isolated: true } : {}),
     event_id: event.event_id,
     event_type: event.event_type,
     event_version: 1,
@@ -23,6 +24,7 @@ export function canonicalShipmentEvent(
     correlation_id: event.correlation_id,
     command_id: envelope.causation_id,
     shipment: {
+      ...(s.sandbox_isolated === true ? { sandbox_isolated: true } : {}),
       shipment_id: publicId('shipment', s.id as string),
       tracking_id: s.tracking_id,
       merchant_id: s.merchant_id ?? null,

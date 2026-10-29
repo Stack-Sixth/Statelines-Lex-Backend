@@ -111,7 +111,7 @@ jobs:
         shell: bash
         run: |
           temp_dir="$(mktemp -d)"
-          migrations=(003_merchant_shipment_integration.sql 004_canonical_webhook_delivery.sql 005_merchant_authorization.sql)
+          migrations=(003_merchant_shipment_integration.sql 004_canonical_webhook_delivery.sql 005_merchant_authorization.sql 006_synthetic_isolation.sql)
           for migration in "${migrations[@]}"; do
             mv "migrations/$migration" "$temp_dir/$migration"
           done
@@ -131,7 +131,7 @@ jobs:
           done
           rmdir "$temp_dir"
           trap - EXIT
-      - name: Apply migrations 003 through 005 through Render production command
+      - name: Apply migrations 003 through 006 through Render production command
         run: npm run migrate:prod
       - name: Verify upgrade and preservation of Shipment, legacy event and destination
         run: node scripts/verify-postgres-migration.mjs verify

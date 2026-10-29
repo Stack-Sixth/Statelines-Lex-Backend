@@ -23,14 +23,33 @@ export async function merchantApi(app: FastifyInstance, db: Database, config: Co
       client_id: req.actor.clientId,
       subject: req.actor.id,
       authorization: 'active',
+      ...((
+        await db.query<{ sandbox_isolated: boolean }>(
+          'SELECT sandbox_isolated FROM merchant.accounts WHERE merchant_id=$1',
+          [merchantScope(req.actor)],
+        )
+      ).rows[0]?.sandbox_isolated
+        ? { sandbox_isolated: true }
+        : {}),
     };
   });
   app.post('/api/v1/merchants', async (req, reply) => {
     requireRole(req.actor, 'admin');
     const b = z
-      .object({ ...commandFields, name: label, external_reference: label })
+      .object({
+        ...commandFields,
+        name: label,
+        external_reference: label,
+        sandbox_isolated: z.boolean().optional(),
+      })
       .strict()
       .parse(req.body);
+    if (b.sandbox_isolated && !config.syntheticBusinessIds?.includes(b.external_reference))
+      throw new AppError(
+        403,
+        'synthetic_business_not_approved',
+        'Synthetic business is not server-approved',
+      );
     const result = await command(
       db,
       req.actor,
@@ -41,8 +60,13 @@ export async function merchantApi(app: FastifyInstance, db: Database, config: Co
         const id = publicId('merchant', randomUUID());
         const merchant = (
           await sql.query(
-            'INSERT INTO merchant.accounts(merchant_id,name,external_reference) VALUES($1,$2,$3) RETURNING merchant_id,name,external_reference,active,version',
-            [id, b.name, b.external_reference],
+            'INSERT INTO merchant.accounts(merchant_id,name,external_reference,sandbox_isolated) VALUES($1,$2,$3,$4) RETURNING merchant_id,name,external_reference,active,version,sandbox_isolated',
+            [
+              id,
+              b.name,
+              b.external_reference,
+              config.syntheticBusinessIds?.includes(b.external_reference) === true,
+            ],
           )
         ).rows[0]!;
         await audit(sql, req.actor, 'merchant.provisioned', id, b.command_id);
@@ -56,7 +80,7 @@ export async function merchantApi(app: FastifyInstance, db: Database, config: Co
     const id = merchantId.parse((req.params as { id: string }).id);
     const merchant = (
       await db.query(
-        'SELECT merchant_id,name,external_reference,active,version FROM merchant.accounts WHERE merchant_id=$1',
+        'SELECT merchant_id,name,external_reference,active,version,sandbox_isolated FROM merchant.accounts WHERE merchant_id=$1',
         [id],
       )
     ).rows[0];

@@ -194,6 +194,7 @@ before(async () => {
   await db.query(await readFile('migrations/003_merchant_shipment_integration.sql', 'utf8'));
   await db.query(await readFile('migrations/004_canonical_webhook_delivery.sql', 'utf8'));
   await db.query(await readFile('migrations/005_merchant_authorization.sql', 'utf8'));
+  await db.query(await readFile('migrations/006_synthetic_isolation.sql', 'utf8'));
   app = await buildApp(db, config);
 });
 after(async () => {
@@ -1955,4 +1956,272 @@ test('merchant pagination, concurrent retries and account suspension preserve th
     'MERCHANT_INACTIVE',
   );
   assert.equal((await call('GET', '/v1/shipments')).json().items.length, 2);
+});
+
+async function provisionSynthetic() {
+  await app.close();
+  app = await buildApp(db, {
+    ...config,
+    syntheticBusinessIds: ['verified-synthetic-a', 'verified-synthetic-b'],
+  });
+  const provision = await call('POST', '/api/v1/merchants', {
+    command_id: randomUUID(),
+    name: 'Synthetic A',
+    external_reference: 'verified-synthetic-a',
+  });
+  assert.equal(provision.statusCode, 201, provision.body);
+  assert.equal(provision.json().merchant.sandbox_isolated, true);
+  const id = provision.json().merchant.merchant_id;
+  await db.query('DELETE FROM merchant.client_subjects WHERE client_id=$1', [
+    'statelines-merchant',
+  ]);
+  await db.query('DELETE FROM merchant.service_clients WHERE client_id=$1', [
+    'statelines-merchant',
+  ]);
+  const binding = await call('POST', `/api/v1/merchants/${id}/service-clients`, {
+    command_id: randomUUID(),
+    client_id: 'statelines-merchant',
+    subjects: [merchantActor.id, 'statelines-merchant'],
+  });
+  assert.equal(binding.statusCode, 201, binding.body);
+  return id;
+}
+
+test('isolation enrollment is server-controlled; ordinary clients cannot suppress operations', async () => {
+  const bad = await call('POST', '/api/v1/merchants', {
+    command_id: randomUUID(),
+    name: 'Unapproved',
+    external_reference: 'unapproved',
+    sandbox_isolated: true,
+  });
+  assert.equal(bad.statusCode, 403, bad.body);
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/api/v1/shipments',
+        merchantShipmentBody({ sandbox_isolated: true }),
+        merchantActor,
+      )
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/v1/shipments',
+        { ...shipBody(), owner_user_id: merchantActor.id, sandbox_isolated: true },
+        merchantActor,
+      )
+    ).statusCode,
+    403,
+  );
+  assert.equal(await count('shipments'), 0);
+  await provisionSynthetic();
+  const ctx = await call('GET', '/api/v1/merchant-context', undefined, {
+    role: 'merchant',
+    id: 'statelines-merchant',
+  });
+  assert.equal(ctx.statusCode, 200, ctx.body);
+  assert.equal(ctx.json().sandbox_isolated, true);
+  assert.equal(
+    (
+      await call(
+        'POST',
+        '/api/v1/shipments',
+        merchantShipmentBody({ merchant_id: undefined, sandbox_isolated: false }),
+        merchantActor,
+      )
+    ).statusCode,
+    400,
+  );
+});
+
+test('synthetic creation, retry, reconciliation and cancellation retain isolation without dispatch', async () => {
+  const merchant = await provisionSynthetic();
+  await destination();
+  const body = merchantShipmentBody({ merchant_id: merchant, sandbox_isolated: true });
+  const created = await call('POST', '/api/v1/shipments', body, merchantActor);
+  assert.equal(created.statusCode, 201, created.body);
+  assert.equal(created.json().shipment.sandbox_isolated, true);
+  assert.deepEqual(
+    (await call('POST', '/api/v1/shipments', body, merchantActor)).json(),
+    created.json(),
+  );
+  const sid = created.json().shipment.shipment_id;
+  const id = internalId('shipment', sid);
+  const list = await call(
+    'GET',
+    '/api/v1/shipments?order_id=STL-ORDER-1',
+    undefined,
+    merchantActor,
+  );
+  assert.equal(list.json().items.length, 1);
+  assert.equal(list.json().items[0].sandbox_isolated, true);
+  assert.equal(
+    (
+      await call(
+        'GET',
+        `/api/v1/shipments/${sid}`,
+        undefined,
+        merchantActor,
+        'statelines-other-merchant',
+      )
+    ).statusCode,
+    404,
+  );
+  assert.equal(
+    (
+      await call('POST', `/v1/shipments/${id}/match`, {
+        command_id: randomUUID(),
+        expected_version: 1,
+      })
+    ).statusCode,
+    409,
+  );
+  assert.equal(
+    (await call('GET', `/v1/shipments/${id}`, undefined, { role: 'carrier', id: 'carrier-user' }))
+      .statusCode,
+    404,
+  );
+  const cancel = {
+    command_id: randomUUID(),
+    expected_version: 1,
+    correlation_id: 'synthetic-cancel',
+    reason: 'Controlled test cleanup',
+  };
+  const cancelled = await call('POST', `/api/v1/shipments/${sid}/cancel`, cancel, merchantActor);
+  assert.equal(cancelled.statusCode, 200, cancelled.body);
+  assert.deepEqual(
+    (await call('POST', `/api/v1/shipments/${sid}/cancel`, cancel, merchantActor)).json(),
+    cancelled.json(),
+  );
+  let sends = 0;
+  const worker = new DeliveryWorker(db, config, async () => {
+    sends++;
+    return { ok: true, retryable: false, status: 200, processed: true };
+  });
+  await worker.tick();
+  await worker.tick();
+  assert.equal(sends, 0);
+  assert.equal(await count('deliveries'), 0);
+  const events = (
+    await db.query<{ sandbox_isolated: boolean; envelope: any; canonical_envelope: any }>(
+      'SELECT sandbox_isolated,envelope,canonical_envelope FROM lex.outbox WHERE aggregate_id=$1',
+      [id],
+    )
+  ).rows;
+  assert.equal(events.length, 2);
+  for (const event of events) {
+    assert.equal(event.sandbox_isolated, true);
+    assert.equal(event.envelope.sandbox_isolated, true);
+    assert.equal(event.envelope.payload.sandbox_isolated, true);
+    assert.equal(event.canonical_envelope.sandbox_isolated, true);
+    assert.equal(event.canonical_envelope.shipment.sandbox_isolated, true);
+  }
+});
+
+test('isolated events cannot be backfilled, replayed, claimed or sent by a stale job', async () => {
+  const merchant = await provisionSynthetic();
+  const dest = await destination();
+  const created = await call(
+    'POST',
+    '/api/v1/shipments',
+    merchantShipmentBody({ merchant_id: merchant }),
+    merchantActor,
+  );
+  assert.equal(created.statusCode, 201, created.body);
+  const id = internalId('shipment', created.json().shipment.shipment_id);
+  const event = (
+    await db.query<{ id: string }>('SELECT id FROM lex.outbox WHERE aggregate_id=$1', [id])
+  ).rows[0]!;
+  const backfill = await call('POST', `/v1/destinations/${dest.id}/backfill`, {
+    command_id: randomUUID(),
+    from: inHours(-1),
+    to: inHours(1),
+    limit: 100,
+  });
+  assert.equal(backfill.statusCode, 200, backfill.body);
+  assert.equal(backfill.json().created, 0);
+  const delivery = randomUUID();
+  await db.query(
+    "INSERT INTO lex.deliveries(id,event_id,destination_id,max_attempts,status) VALUES($1,$2,$3,3,'dead_letter')",
+    [delivery, event.id, dest.id],
+  );
+  assert.equal(
+    (
+      await call('POST', `/v1/deliveries/${delivery}/replay`, {
+        command_id: randomUUID(),
+        note: 'must stay isolated',
+      })
+    ).statusCode,
+    409,
+  );
+  await db.query("UPDATE lex.deliveries SET status='pending' WHERE id=$1", [delivery]);
+  let sends = 0;
+  const worker = new DeliveryWorker(db, config, async () => {
+    sends++;
+    return { ok: true, retryable: false, status: 200 };
+  });
+  assert.equal(await worker.claim(), undefined);
+  const lease = randomUUID();
+  await db.query("UPDATE lex.deliveries SET status='running',lease_token=$2 WHERE id=$1", [
+    delivery,
+    lease,
+  ]);
+  await worker.process({
+    id: delivery,
+    event_id: event.id,
+    event_type: 'ShipmentCreated',
+    envelope_format: 'legacy_v1',
+    destination_id: dest.id,
+    attempts: 1,
+    max_attempts: 3,
+    replay_count: 0,
+    lease_token: lease,
+    url: 'https://receiver.example.com/lex',
+    secret_ref: 'wallet',
+    envelope: { sandbox_isolated: false },
+  });
+  assert.equal(sends, 0);
+  assert.equal(
+    (
+      await db.query<{ status: string }>('SELECT status FROM lex.deliveries WHERE id=$1', [
+        delivery,
+      ])
+    ).rows[0]!.status,
+    'dead_letter',
+  );
+});
+
+test('synthetic legacy creates are isolated without a caller flag and normal merchants still deliver', async () => {
+  await provisionSynthetic();
+  await destination();
+  const synthetic = await call(
+    'POST',
+    '/v1/shipments',
+    { ...shipBody(), owner_user_id: merchantActor.id },
+    merchantActor,
+  );
+  assert.equal(synthetic.statusCode, 201, synthetic.body);
+  assert.equal(synthetic.json().sandbox_isolated, true);
+  const normal = await call(
+    'POST',
+    '/api/v1/shipments',
+    merchantShipmentBody({ merchant_id: merchantIdB }),
+    merchantActor,
+    'statelines-other-merchant',
+  );
+  assert.equal(normal.statusCode, 201, normal.body);
+  assert.equal(normal.json().shipment.sandbox_isolated, undefined);
+  const sent: any[] = [];
+  const worker = new DeliveryWorker(db, config, async (_u, _s, e) => {
+    sent.push(e);
+    return { ok: true, retryable: false, status: 200, processed: true };
+  });
+  await worker.tick();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].sandbox_isolated, undefined);
+  assert.equal(sent[0].aggregate.id, internalId('shipment', normal.json().shipment.shipment_id));
 });

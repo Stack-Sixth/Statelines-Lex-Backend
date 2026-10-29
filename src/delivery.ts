@@ -25,12 +25,21 @@ export class DeliveryWorker {
   async fanout() {
     return this.db.transaction(async (sql) => {
       const events = (
-        await sql.query<{ id: string; event_type: string; has_canonical: boolean }>(
-          `SELECT id,event_type,canonical_envelope IS NOT NULL AS has_canonical FROM lex.outbox WHERE dispatched_at IS NULL ORDER BY created_at,id LIMIT $1 FOR UPDATE SKIP LOCKED`,
+        await sql.query<{
+          id: string;
+          event_type: string;
+          has_canonical: boolean;
+          sandbox_isolated: boolean;
+        }>(
+          `SELECT id,event_type,sandbox_isolated,canonical_envelope IS NOT NULL AS has_canonical FROM lex.outbox WHERE dispatched_at IS NULL ORDER BY created_at,id LIMIT $1 FOR UPDATE SKIP LOCKED`,
           [this.config.batchSize],
         )
       ).rows;
       for (const event of events) {
+        if (event.sandbox_isolated) {
+          await sql.query('UPDATE lex.outbox SET dispatched_at=now() WHERE id=$1', [event.id]);
+          continue;
+        }
         const targets = (
           await sql.query<{ id: string }>(
             `SELECT id FROM lex.destinations WHERE active AND $1=ANY(event_types) AND (envelope_format='legacy_v1' OR $2)`,
@@ -54,7 +63,7 @@ export class DeliveryWorker {
       );
       const row = (
         await sql.query<Omit<DeliveryJob, 'envelope'>>(
-          `SELECT d.*,p.url,p.secret_ref,p.envelope_format,e.event_type FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE p.active AND e.event_type=ANY(p.event_types) AND (p.envelope_format='legacy_v1' OR e.canonical_envelope IS NOT NULL) AND d.attempts<d.max_attempts AND ((d.status IN ('pending','retrying') AND d.next_attempt_at<=now()) OR (d.status='running' AND d.lease_until<now())) ORDER BY d.next_attempt_at,d.id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`,
+          `SELECT d.*,p.url,p.secret_ref,p.envelope_format,e.event_type FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE NOT e.sandbox_isolated AND p.active AND e.event_type=ANY(p.event_types) AND (p.envelope_format='legacy_v1' OR e.canonical_envelope IS NOT NULL) AND d.attempts<d.max_attempts AND ((d.status IN ('pending','retrying') AND d.next_attempt_at<=now()) OR (d.status='running' AND d.lease_until<now())) ORDER BY d.next_attempt_at,d.id LIMIT 1 FOR UPDATE OF d SKIP LOCKED`,
         )
       ).rows[0];
       if (!row) return;
@@ -79,6 +88,19 @@ export class DeliveryWorker {
     });
   }
   async process(job: DeliveryJob) {
+    const isolated = (
+      await this.db.query<{ sandbox_isolated: boolean }>(
+        'SELECT sandbox_isolated FROM lex.outbox WHERE id=$1',
+        [job.event_id],
+      )
+    ).rows[0]?.sandbox_isolated;
+    if (isolated !== false) {
+      await this.db.query(
+        "UPDATE lex.deliveries SET status='dead_letter',lease_token=NULL,lease_until=NULL,last_error='Synthetic delivery isolated',updated_at=now() WHERE id=$1 AND lease_token=$2",
+        [job.id, job.lease_token],
+      );
+      return;
+    }
     // Recheck immediately before I/O; an already in-flight request cannot be recalled.
     const active = (
       await this.db.query(

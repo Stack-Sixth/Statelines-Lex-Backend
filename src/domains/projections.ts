@@ -6,6 +6,7 @@ export function shipmentProjection(
   merchantReference?: Record<string, unknown>,
 ) {
   return {
+    ...(s.sandbox_isolated === true ? { sandbox_isolated: true } : {}),
     id: s.id,
     shipment_id: publicId('shipment', s.id as string),
     tracking_id: s.tracking_id,
@@ -43,6 +44,7 @@ export function eventProjection(e: Record<string, unknown>) {
       ? 'shipment.cancelled'
       : eventNames[e.event_type as string];
   return {
+    ...(e.sandbox_isolated === true ? { sandbox_isolated: true } : {}),
     event_id: publicId('event', e.event_id as string),
     legacy_event_id: e.event_id,
     event_type: eventType,

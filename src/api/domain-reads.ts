@@ -28,6 +28,7 @@ const locationSchema = z.object({ corridor }).strict();
 const merchantShipmentSchema = z
   .object({
     command_id: uuid,
+    sandbox_isolated: z.literal(true).optional(),
     merchant_id: z.string().trim().min(1).max(200).optional(),
     order_id: z.string().trim().min(1).max(200),
     external_shipment_id: z.string().trim().min(1).max(200).optional(),
@@ -207,6 +208,7 @@ export async function domainApi(app: FastifyInstance, db: Database, config: Conf
         req.actor,
         createShipmentSchema.parse({
           command_id: b.command_id,
+          sandbox_isolated: b.sandbox_isolated,
           owner_user_id: req.actor.id,
           origin: b.origin.corridor,
           destination: b.destination.corridor,

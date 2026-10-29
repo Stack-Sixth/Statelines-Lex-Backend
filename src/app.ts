@@ -267,7 +267,7 @@ export async function buildApp(db: Database, config: Config) {
           throw new AppError(409, 'inactive_destination', 'Destination must be active');
         const events = (
           await sql.query<{ id: string }>(
-            `SELECT id FROM lex.outbox WHERE created_at >= $1 AND created_at < $2 AND ($3::uuid IS NULL OR id>$3) AND event_type=ANY($4::text[]) AND ($6::text = 'legacy_v1' OR canonical_envelope IS NOT NULL) ORDER BY id LIMIT $5`,
+            `SELECT id FROM lex.outbox WHERE created_at >= $1 AND created_at < $2 AND ($3::uuid IS NULL OR id>$3) AND event_type=ANY($4::text[]) AND NOT sandbox_isolated AND ($6::text = 'legacy_v1' OR canonical_envelope IS NOT NULL) ORDER BY id LIMIT $5`,
             [
               b.from,
               b.to,
@@ -344,12 +344,23 @@ export async function buildApp(db: Database, config: Config) {
       .parse(req.body);
     return command(db, req.actor, b.command_id, 'delivery.replay', { id, ...b }, async (sql) => {
       const d = (
-        await sql.query<{ status: string; active: boolean; subscribed: boolean }>(
-          `SELECT d.status,p.active,(e.event_type=ANY(p.event_types)) AS subscribed FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE d.id=$1 FOR UPDATE OF d`,
+        await sql.query<{
+          status: string;
+          active: boolean;
+          subscribed: boolean;
+          sandbox_isolated: boolean;
+        }>(
+          `SELECT d.status,p.active,e.sandbox_isolated,(e.event_type=ANY(p.event_types)) AS subscribed FROM lex.deliveries d JOIN lex.destinations p ON p.id=d.destination_id JOIN lex.outbox e ON e.id=d.event_id WHERE d.id=$1 FOR UPDATE OF d`,
           [id],
         )
       ).rows[0];
       if (!d) throw new AppError(404, 'not_found', 'Delivery not found');
+      if (d.sandbox_isolated)
+        throw new AppError(
+          409,
+          'synthetic_operation_blocked',
+          'Synthetic events cannot be replayed',
+        );
       if (!d.active || !d.subscribed)
         throw new AppError(409, 'inactive_destination', 'Destination is inactive or unsubscribed');
       if (!['dead_letter', 'accepted'].includes(d.status))

@@ -57,4 +57,4 @@ export async function assertMerchantShipment(sql: Sql, actor: Actor, id: string)
 /** Shared by both API generations. owner_user_id remains attribution, not tenant authority. */
 export const shipmentAccess = `($1 IN ('admin','operator')
   OR ($1='merchant' AND EXISTS(SELECT 1 FROM merchant.shipment_scopes ms WHERE ms.shipment_id=s.id AND ms.merchant_id=$3))
-  OR ($1='carrier' AND EXISTS(SELECT 1 FROM lex.carriers c WHERE c.id=s.assigned_carrier_id AND c.user_id=$2)))`;
+  OR ($1='carrier' AND NOT s.sandbox_isolated AND EXISTS(SELECT 1 FROM lex.carriers c WHERE c.id=s.assigned_carrier_id AND c.user_id=$2)))`;

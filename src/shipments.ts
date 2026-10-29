@@ -23,6 +23,7 @@ const weight = z.number().positive().max(1000000).multipleOf(0.001);
 export const createShipmentSchema = z
   .object({
     ...commandFields,
+    sandbox_isolated: z.literal(true).optional(),
     owner_user_id: z.string().min(1).max(200).optional(),
     origin: corridor,
     destination: corridor,
@@ -161,10 +162,24 @@ export function shipmentService(db: Database) {
       return command(db, actor, input.command_id, action, commandInput, async (sql) => {
         if (Date.parse(input.pickup_deadline) <= Date.now())
           throw new AppError(422, 'invalid_deadline', 'Pickup deadline must be in the future');
+        const isolated =
+          actor.role === 'merchant' &&
+          (
+            await sql.query<{ sandbox_isolated: boolean }>(
+              'SELECT sandbox_isolated FROM merchant.accounts WHERE merchant_id=$1',
+              [merchantScope(actor)],
+            )
+          ).rows[0]?.sandbox_isolated === true;
+        if (input.sandbox_isolated && !isolated)
+          throw new AppError(
+            403,
+            'isolation_not_authorized',
+            'Isolation requires a server-approved synthetic merchant',
+          );
         const id = randomUUID();
         const s = (
           await sql.query<Shipment>(
-            'INSERT INTO lex.shipments(id,tracking_id,owner_user_id,origin,destination,weight_kg,package_size,service_level,pickup_deadline,delivery_deadline) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *',
+            'INSERT INTO lex.shipments(id,tracking_id,owner_user_id,origin,destination,weight_kg,package_size,service_level,pickup_deadline,delivery_deadline,sandbox_isolated) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *',
             [
               id,
               'LEX-' + id.toUpperCase(),
@@ -176,6 +191,7 @@ export function shipmentService(db: Database) {
               input.service_level,
               input.pickup_deadline,
               input.delivery_deadline,
+              isolated,
             ],
           )
         ).rows[0]!;
@@ -373,6 +389,12 @@ export function shipmentService(db: Database) {
         { id, ...input },
         async (sql) => {
           const s = await lockedShipment(sql, id, input.expected_version);
+          if (s.sandbox_isolated)
+            throw new AppError(
+              409,
+              'synthetic_operation_blocked',
+              'Synthetic shipments cannot be assigned to carriers',
+            );
           if (s.status !== 'created')
             throw new AppError(409, 'invalid_transition', 'Only created shipments can be matched');
           const carrier = (
@@ -438,6 +460,12 @@ export function shipmentService(db: Database) {
         async (sql) => {
           if (actor.role === 'merchant') await assertMerchantShipment(sql, actor, id);
           const s = await lockedShipment(sql, id, input.expected_version);
+          if (s.sandbox_isolated && input.status !== 'cancelled')
+            throw new AppError(
+              409,
+              'synthetic_operation_blocked',
+              'Synthetic shipments may only be cancelled',
+            );
           const nextStatus = input.status;
           if (actor.role === 'merchant') {
             if (nextStatus !== 'cancelled' || !['created', 'matched'].includes(s.status))
@@ -557,6 +585,12 @@ export function shipmentService(db: Database) {
         { id, ...input },
         async (sql) => {
           const s = await lockedShipment(sql, id, input.expected_version);
+          if (s.sandbox_isolated)
+            throw new AppError(
+              409,
+              'synthetic_operation_blocked',
+              'Synthetic shipments cannot create wallet approvals',
+            );
           if (s.status !== 'delivered' || !s.assigned_carrier_id)
             throw new AppError(
               409,

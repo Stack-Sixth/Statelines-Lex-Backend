@@ -58,6 +58,7 @@ export interface Shipment {
   delivery_deadline: string | Date;
   assigned_carrier_id: string | null;
   capacity_reserved: boolean;
+  sandbox_isolated?: boolean;
 }
 export const transitions: Record<Status, readonly Status[]> = {
   created: ['cancelled'],
@@ -158,7 +159,15 @@ export async function emit(
   correlationId?: string,
 ) {
   const id = randomUUID();
+  const isolated =
+    (
+      await sql.query<{ sandbox_isolated: boolean }>(
+        'SELECT sandbox_isolated FROM lex.shipments WHERE id=$1',
+        [shipment.id],
+      )
+    ).rows[0]?.sandbox_isolated === true;
   const envelope = {
+    ...(isolated ? { sandbox_isolated: true } : {}),
     event_id: id,
     event_type: eventType,
     schema_version: 1,
@@ -167,7 +176,9 @@ export async function emit(
     correlation_id: correlationId || shipment.id,
     causation_id: commandId,
     aggregate: { type: 'shipment', id: shipment.id, version: shipment.version },
-    payload,
+    payload: isolated
+      ? { ...(payload as Record<string, unknown>), sandbox_isolated: true }
+      : payload,
   };
   let canonicalEnvelope = null;
   if (canonicalShipmentTypes.includes(eventType)) {
@@ -185,7 +196,7 @@ export async function emit(
     canonicalEnvelope = canonicalShipmentEvent(envelope, snapshot);
   }
   await sql.query(
-    'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope,canonical_envelope) VALUES($1,$2,$3,$4,$5,$6)',
+    'INSERT INTO lex.outbox(id,event_type,aggregate_id,aggregate_version,envelope,canonical_envelope,sandbox_isolated) VALUES($1,$2,$3,$4,$5,$6,$7)',
     [
       id,
       eventType,
@@ -193,6 +204,7 @@ export async function emit(
       shipment.version,
       JSON.stringify(envelope),
       canonicalEnvelope ? JSON.stringify(canonicalEnvelope) : null,
+      isolated,
     ],
   );
   return id;

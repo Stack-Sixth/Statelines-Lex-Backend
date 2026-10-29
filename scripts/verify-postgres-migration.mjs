@@ -121,6 +121,7 @@ async function verify() {
     '003_merchant_shipment_integration.sql',
     '004_canonical_webhook_delivery.sql',
     '005_merchant_authorization.sql',
+    '006_synthetic_isolation.sql',
   ]) {
     const count = await pool.query(
       'SELECT count(*)::int AS count FROM lex.schema_migrations WHERE name=$1',
@@ -165,6 +166,16 @@ async function verify() {
     ).rows[0];
     assert.equal(rls.relrowsecurity, true);
   }
+  assert.equal(
+    (await pool.query('SELECT sandbox_isolated FROM lex.shipments WHERE id=$1', [shipmentId]))
+      .rows[0].sandbox_isolated,
+    false,
+  );
+  assert.equal(
+    (await pool.query('SELECT sandbox_isolated FROM lex.outbox WHERE id=$1', [eventId])).rows[0]
+      .sandbox_isolated,
+    false,
+  );
   const referenceRelation = await pool.query(
     "SELECT to_regclass('lex.merchant_shipment_refs') AS relation",
   );

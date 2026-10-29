@@ -35,6 +35,7 @@ export async function authenticate(
     if (
       role === 'merchant' &&
       [
+        'sandbox_isolated',
         'merchant_id',
         'tenant_id',
         'scope',
