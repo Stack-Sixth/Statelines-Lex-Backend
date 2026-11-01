@@ -1,0 +1,27 @@
+{
+  "version": "2026.11.01-cas-nullfix1",
+  "requires": "Merchant 2026.10.31-rc1",
+  "status": "local and native hosted compile verified; not operationally applied",
+  "files": [
+    {
+      "path": "base44/shared/casBooking.ts",
+      "baseline_sha256": "1c8a6ab589de0ed7a67266c12fa02b892f833ee692c3175bcd7cdeeaab1700e7",
+      "candidate_sha256": "0c5311508a9aad11544af82025a97557943063eb9badce2608ff3b9a2381feba"
+    },
+    {
+      "path": "base44/functions/merchantDraft/entry.ts",
+      "baseline_sha256": "4620729c0a668fb4ea8cf21b3d462b805384451bb850de60e57e38671b19c1b5",
+      "candidate_sha256": "d04f797adeec969cb0c7781192ebb315917dcd0f43c282873204c38d0cb5d2dd"
+    },
+    {
+      "path": "base44/functions/createOrderOnRender/entry.ts",
+      "baseline_sha256": "66b59d75aeabf088c64bd17d7fb348e370ac6fb7d21e239c7cce22f921316991",
+      "candidate_sha256": "a758c6c2165367f001b3d5a168815b4305d2302f45a067990699e9c137d64ed0"
+    },
+    {
+      "path": "base44/functions/cancelOrderOnDomain/entry.ts",
+      "baseline_sha256": "7f7aa2d02f356fddc7ef3c6fe0f1230d77f2282840eaafdf8fe7128ce746b34f",
+      "candidate_sha256": "1052baeb2e610458c556718bb9816516e670a685f6aa3882324f4eefbd804a2c"
+    }
+  ]
+}

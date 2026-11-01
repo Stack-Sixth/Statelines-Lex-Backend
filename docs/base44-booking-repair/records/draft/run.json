@@ -1,0 +1,22 @@
+{
+  "nonce": "81a276ac-b8cf-4945-b3e0-f88bb5c873df",
+  "alpha_user": "6ae36074e14192b2f7f51dc7",
+  "alpha_merchant": "6ae36089acdf77499fbf16d5",
+  "entity": "ShipmentDraft",
+  "shipment_creation": false,
+  "fixture_id": "6ae732eab19092591ae66206",
+  "fixture_created_by_user": true,
+  "alpha_identity_confirmed": true,
+  "policy_applied": false,
+  "owner_sdk_checks": {
+    "read": 200,
+    "claim_update": 403,
+    "merchant_clear": 403,
+    "cas": {
+      "http": 200,
+      "updated": 0
+    },
+    "delete": 404,
+    "create": 403
+  }
+}

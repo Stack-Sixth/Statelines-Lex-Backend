@@ -1,0 +1,25 @@
+{
+  "base_url": "https://statelines-lex-backend.onrender.com",
+  "authenticated": false,
+  "checks": [
+    {
+      "path": "/health/live",
+      "http_status": 200,
+      "body": "{\"status\":\"alive\"}",
+      "date_utc": "Fri, 30 Oct 2026 21:13:33 GMT"
+    },
+    {
+      "path": "/health/ready",
+      "http_status": 200,
+      "body": "{\"status\":\"ready\"}",
+      "date_utc": "Fri, 30 Oct 2026 21:13:34 GMT"
+    },
+    {
+      "path": "/api/v1/merchant-context",
+      "http_status": 401,
+      "body": "{\"error\":\"unauthorized\",\"message\":\"Valid short-lived service token required\",\"request_id\":\"req-3b9\"}",
+      "date_utc": "Fri, 30 Oct 2026 21:13:34 GMT"
+    }
+  ],
+  "limitation": "401 does not prove route registration, deployed commit or merchant authorization. No dedicated token was issued."
+}

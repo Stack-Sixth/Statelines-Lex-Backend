@@ -1,0 +1,22 @@
+[
+  {
+    "owned_namespace_removed": true,
+    "files_removed": 81,
+    "existing_sources_changed": false,
+    "app": "lex",
+    "temporary_function_removed": true,
+    "native_compiler": "accepted all changed-handler imports; no business handler invoked",
+    "handler_count": 21,
+    "service_role_authorization": "not verified"
+  },
+  {
+    "owned_namespace_removed": true,
+    "files_removed": 83,
+    "existing_sources_changed": false,
+    "app": "merchant",
+    "temporary_function_removed": true,
+    "native_compiler": "accepted all changed-handler imports; no business handler invoked",
+    "handler_count": 28,
+    "service_role_authorization": "not verified"
+  }
+]

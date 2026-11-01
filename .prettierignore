@@ -12,3 +12,7 @@ jsconfig.json
 postcss.config.js
 tailwind.config.js
 vite.config.js
+
+# Byte-preserved Base44 repair snapshots and recorded evidence.
+docs/base44-booking-repair/source/
+docs/base44-booking-repair/records/

@@ -1,0 +1,7 @@
+{
+  "actor_role": "admin",
+  "operation": "controlled_handler_read",
+  "http": 403,
+  "code": "Approved controlled-test account required",
+  "expected_rejection": true
+}

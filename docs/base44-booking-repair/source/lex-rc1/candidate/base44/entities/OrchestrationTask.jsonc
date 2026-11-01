@@ -1,0 +1,100 @@
+{
+  "name": "OrchestrationTask",
+  "type": "object",
+  "properties": {
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "webhook_redeliver",
+        "event_publish",
+        "engine_sync"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "retrying",
+        "cancelled",
+        "prioritized",
+        "preparing"
+      ],
+      "default": "queued"
+    },
+    "priority": {
+      "type": "number",
+      "default": 5
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "max_retries": {
+      "type": "number",
+      "default": 3
+    },
+    "scheduled_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failure_reason": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object"
+    },
+    "lease_owner": {
+      "type": "string",
+      "description": "Worker id holding an active claim on this task"
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lex_transition_ref": {
+      "type": "string"
+    },
+    "lex_queue_proof": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "task_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

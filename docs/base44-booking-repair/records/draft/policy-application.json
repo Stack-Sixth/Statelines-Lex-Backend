@@ -1,0 +1,16 @@
+{
+  "entity": "ShipmentDraft",
+  "applied": true,
+  "source_and_live_readback": "match",
+  "source_sha256": "a326a57c93bcf9576e3ad5d9749b8d670258b55449992f0ba8119bc5fa09f102",
+  "scope": [
+    "6ae36089acdf77499fbf16d5",
+    "6ae36c0f51cbdef3e3e7b3c7"
+  ],
+  "read_rule": "unchanged",
+  "old_properties": "unchanged",
+  "unrelated_owner_rules": "preserved",
+  "other_entity_policies_changed": false,
+  "booking_gates_changed": false,
+  "actual_owner_acceptance": "pending"
+}

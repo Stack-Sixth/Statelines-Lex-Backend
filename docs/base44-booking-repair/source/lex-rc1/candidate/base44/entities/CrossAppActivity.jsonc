@@ -1,0 +1,75 @@
+{
+  "name": "CrossAppActivity",
+  "type": "object",
+  "properties": {
+    "tracking_id": {
+      "type": "string"
+    },
+    "app": {
+      "type": "string",
+      "enum": [
+        "lex",
+        "noc",
+        "merchant",
+        "carrier"
+      ],
+      "default": "lex",
+      "description": "Connected app that produced the activity"
+    },
+    "app_label": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "e.g. package.created, package.checked_in, custody.handoff, package.delivered"
+    },
+    "stage": {
+      "type": "string",
+      "description": "Cross-app stage the activity moved the package to"
+    },
+    "note": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string",
+      "description": "User or system that performed the activity"
+    },
+    "location": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "tracking_id|occurred_at|event_type \u2014 dedupes replays from push and pull paths"
+    }
+  },
+  "required": [
+    "tracking_id",
+    "event_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

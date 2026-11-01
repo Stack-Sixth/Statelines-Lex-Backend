@@ -1,0 +1,42 @@
+{
+  "scope": "draft-only Alpha/Beta service handler",
+  "backend_calls": false,
+  "payment_calls": false,
+  "existing_writers_replaced": false,
+  "files": [
+    {
+      "path": "base44/shared/statelinesControlledDraft20261101/functions/merchantDraft/entry.ts",
+      "sha256": "0fba41931d478e5987f5a6091b916068a299de26917f3cbd45d780d38e6c3211",
+      "baseline": "new namespaced file"
+    },
+    {
+      "path": "base44/shared/statelinesControlledDraft20261101/shared/bookingMerchant.ts",
+      "sha256": "50fc828d544c4a74d3533ce2a0a6822609da4d4323c197974447a823de687e5a",
+      "baseline": "new namespaced file"
+    },
+    {
+      "path": "base44/shared/statelinesControlledDraft20261101/shared/casBooking.ts",
+      "sha256": "0c5311508a9aad11544af82025a97557943063eb9badce2608ff3b9a2381feba",
+      "baseline": "new namespaced file"
+    },
+    {
+      "path": "base44/shared/statelinesControlledDraft20261101/shared/customerShipment.ts",
+      "sha256": "5cf9325e2854b23eebe9db514babcc8925fb0e49685c6bdb935c9d9d04a2104b",
+      "baseline": "new namespaced file"
+    },
+    {
+      "path": "base44/shared/statelinesControlledDraft20261101/shared/serverRecord.ts",
+      "sha256": "31dc81f3e97e34b6a7c7230798d57833c02746f1605b4e1442615e4eb06a0d5e",
+      "baseline": "new namespaced file"
+    },
+    {
+      "path": "base44/functions/controlledMerchantDraft/entry.ts",
+      "sha256": "675535ceb4a0442791523ca1fd5011de88a68f0fde5f5566cc27570f21d5a207",
+      "baseline": "new function; collision check required"
+    }
+  ],
+  "storage": "ControlledMerchantDraft; existing ShipmentDraft is not read or written by this handler",
+  "record_signing_secret": "MERCHANT_CONTROLLED_RECORD_SIGNING_SECRET",
+  "cryptographic_domain": "merchant-controlled-record-v1",
+  "rationale": "cohort RLS admitted unbound-record ingress; separate server-only storage prevents that bypass"
+}

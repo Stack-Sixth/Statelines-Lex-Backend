@@ -1,0 +1,331 @@
+{
+  "backend_candidate": "1ae720e2d7977a9e1ca66a1f620f20af6fa2a067",
+  "backend_changed": false,
+  "not_deployed": true,
+  "gates_unchanged": true,
+  "source_export_sha256": "e424ea881a8fa483a4e2a043e3fac09caa8b15be71eef66ee644228defe7de78",
+  "source_export_bytes": 153376,
+  "source_export_lines": 3267,
+  "source_blocks": 22,
+  "files": [
+    {
+      "file": "base44/entities/AuditLog.jsonc",
+      "baseline_sha256": "625dd5fc2c6eda5f40dfd62fbd42dd0bd306bd6350056f6362611650d873f20e",
+      "candidate_sha256": "3a099cb5f25795cb6445d08cca7fc85b105dd4799245cef0e844d5f722784b4d"
+    },
+    {
+      "file": "base44/entities/ChainOfCustodyEvent.jsonc",
+      "baseline_sha256": "f01ca0d6e68d65dcf0c0e5f9f353432d9c30ffc5e418d8e7297b53d087fe6729",
+      "candidate_sha256": "eb15ea1ecd11cd7bbfbb19cdfa2b3d8026e2faceb504235b4388ceaf0c07263c"
+    },
+    {
+      "file": "base44/entities/CommunityCarrier.jsonc",
+      "baseline_sha256": "86b181dd7689e03734f8b96379135d2a88ccbc5240f768669745409a461799a2",
+      "candidate_sha256": "c1aa29f3d05bddce94a4694d0aa7d453140c500e3b8a863d40c2178fa13a6246"
+    },
+    {
+      "file": "base44/entities/CrossAppPackage.jsonc",
+      "baseline_sha256": "30a3058a6acddbb8f00d5d7d47222d952f498ddf079ea38d7a41dd88f4307bde",
+      "candidate_sha256": "f4867bb1a62252037774718c0ca12d8a50e28457e10cadbcd26f51aa5afc80df"
+    },
+    {
+      "file": "base44/entities/EventLog.jsonc",
+      "baseline_sha256": "f4108b893e2080293264c5b26ba8368dfee99e5e2a6769ef0157d1d45f083729",
+      "candidate_sha256": "3bfe80992a7ba56922a212443c3871d9efa4d4bf19bc7b25d1f89dddcdf3b6f9"
+    },
+    {
+      "file": "base44/entities/FraudAlert.jsonc",
+      "baseline_sha256": "8f13bbc1ba0e392ea2cad83c2ccd8bc7fd5d37b260b1126824f0acdedc47f7ed",
+      "candidate_sha256": "8ad4c7a51f03ef04622bac9cd839a3724bdfa8e5ac53de03564290951d841b5d"
+    },
+    {
+      "file": "base44/entities/Incident.jsonc",
+      "baseline_sha256": "4cce226e00014394d23222b81f3f5684263fc62e974e4b433be58dd842e96bef",
+      "candidate_sha256": "3824f03971a6d00b3b4c07593bc9832f1814419cea9b469f823792f93c192d9f"
+    },
+    {
+      "file": "base44/entities/LexIngressBinding.jsonc",
+      "baseline_sha256": null,
+      "candidate_sha256": "a4015aff8ac29333b415e7690cc213a166e15024771e41162e75c8f3d5fd34b2"
+    },
+    {
+      "file": "base44/entities/LexOperationalAuthority.jsonc",
+      "baseline_sha256": null,
+      "candidate_sha256": "c1ac7b4a63c0d08eedb6f792bd7eb0ddeb2219e087d3447e2177f26240fb3e99"
+    },
+    {
+      "file": "base44/entities/OrchestrationTask.jsonc",
+      "baseline_sha256": "24e4fbcec5e532d1266de75e7bdd4ecc3443867449b25ef78f334f73aeb82e14",
+      "candidate_sha256": "d9fd1cca24c636463472fd0237d2ebd4c4d287fbb20f31cad2547243dce5e5dc"
+    },
+    {
+      "file": "base44/entities/PlatformConnection.jsonc",
+      "baseline_sha256": "c29275f5203a767a31ce24c35a4a61db4738c8fafd745a1c278d97afbee61991",
+      "candidate_sha256": "18020d3b897a546ac7cf0bbe976631cd84e0e11d83c79db555580630abad9dea"
+    },
+    {
+      "file": "base44/entities/Shipment.jsonc",
+      "baseline_sha256": "92c4555d73afed777f3a0698c2b94168060c50663362d489f275da348f7a3833",
+      "candidate_sha256": "704c1b5eed2434ad94d084ed93fe09818a7b25bd2126c2c2a1069da6adbfecf1"
+    },
+    {
+      "file": "base44/entities/ShipmentLifecycleEvent.jsonc",
+      "baseline_sha256": "222e03b578c77e50ed94f0f22ce75e453380f7bc553f64afe19fbdaa66d2082c",
+      "candidate_sha256": "80ef74f80653f4984f5ee7a2d674616078eb0d51dcaf1078b5fff50b4e1c0fae"
+    },
+    {
+      "file": "base44/entities/SmartBundle.jsonc",
+      "baseline_sha256": "f75e1d588d28971ae2c712ceadde46e0d0b44a6dcf4d076b35f157425223a8cd",
+      "candidate_sha256": "09230630256e55c139445229e3ea4da37f64c6c5159fe95a780fb62cdfaa73ae"
+    },
+    {
+      "file": "base44/functions/lexApi/entry.ts",
+      "baseline_sha256": "8c8c71dd109ec4ace6e2f468c549a5e067c2f3f52829e4bfbff895e062b11b5a",
+      "candidate_sha256": "cc1d912906f5de533dc57e739199f6e108157638c3846d3f106dfdfa0d407231"
+    },
+    {
+      "file": "base44/functions/lexApproveOperationalAuthority/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "671371f192267bd578fcf725d65a1a04b072342f5fe5a1763f6bd17f10771796"
+    },
+    {
+      "file": "base44/functions/lexCarrierGateway/entry.ts",
+      "baseline_sha256": "e14a1935151036bb0775384b327f3d34ff9c0d6ef6e41243cd17e7f8d4d45c13",
+      "candidate_sha256": "fe69915bbfdcc47c1de536007c6c2b24f421901522f4c689658a9212c19e4e33"
+    },
+    {
+      "file": "base44/functions/lexDetectFraud/entry.ts",
+      "baseline_sha256": "1c6508f8fbe6393d88d66e16eadc72accdc74163e0a3b9d2257659392a32471c",
+      "candidate_sha256": "97b785975c395998fd6aa13a8ee33e2436796b1d98768a10a7e07703295e1c1d"
+    },
+    {
+      "file": "base44/functions/lexEngineCleanup/entry.ts",
+      "baseline_sha256": "ae369237fcc4d8a0a1dffa78b381b1f77f4f3d69c263c23fb6aad153f7ad1bb1",
+      "candidate_sha256": "3db8720762102ff191a35dbcb163432c78f41482af7cb7b9d29ffb223cddaeab"
+    },
+    {
+      "file": "base44/functions/lexEngineSync/entry.ts",
+      "baseline_sha256": "bcac494398a5716c9f99a47b93b1b147fb92d3d9b121e49243193fa339f9a8e0",
+      "candidate_sha256": "8b6dd8932b00d81a02d83bc53702e633cebfa01c5be8ce152df6d9035cdd31dc"
+    },
+    {
+      "file": "base44/functions/lexEventReliability/entry.ts",
+      "baseline_sha256": "46f6ca20cc20b0fed9517da4f6204c968e4569711738455fa2ace57e4d8d894c",
+      "candidate_sha256": "77e0dc910cad56b55ae4e9e5534195e5b6e2dd381c63a9756b55a9bddd8d599d"
+    },
+    {
+      "file": "base44/functions/lexIngestWebhook/entry.ts",
+      "baseline_sha256": "e669dd06818b81ef5c0ca124f46b8d727c815eb7396e8874c5adbc18545d02a2",
+      "candidate_sha256": "312c5942c22b979b2c5bdbf1049b71c58d625e8c2173db89c58b255856d00de3"
+    },
+    {
+      "file": "base44/functions/lexIngressControl/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "396e7bd40fcfc7a5f9d7eb40652d42562c3492e9d2de812c0fc2d20fc6516746"
+    },
+    {
+      "file": "base44/functions/lexLifecycle/entry.ts",
+      "baseline_sha256": "8b8d890aa7024459158466362de45ffd7668bf4d4abeed2ec90e1fa8532d3a3e",
+      "candidate_sha256": "552b48228a925e33afd71749d1864fb381e856e833675c4410fb92eec8d19ada"
+    },
+    {
+      "file": "base44/functions/lexMatchShipments/entry.ts",
+      "baseline_sha256": "16a5855a6fdedf5b5ce9a860a773fe7bf9e94a6f6a8160ea77dd033348f31810",
+      "candidate_sha256": "879369be3fab367980fb6329a977e05584da92fb4a7cb2932eb1b8295cf72944"
+    },
+    {
+      "file": "base44/functions/lexOptimizeBundles/entry.ts",
+      "baseline_sha256": "6f2ae50dd2de3ade4d8dd6b79bcecca904d1a2773abefbd17d940b287506e5fe",
+      "candidate_sha256": "46cec2d3d98867c3c947885c45ccbbae6c66fdb17a561031f476dbc47b10263f"
+    },
+    {
+      "file": "base44/functions/lexPublishToPlatforms/entry.ts",
+      "baseline_sha256": "06fe5ff3a380dffeaf30bb181574a9bea8c1ddf441f25e8fcea68f75d8a6e19c",
+      "candidate_sha256": "cc23f3553f434325b9af3abcb768e668e200af55aba5b4afc9872de3e696eba7"
+    },
+    {
+      "file": "base44/functions/lexQueue/entry.ts",
+      "baseline_sha256": "d4cbbc0b760803be46f8803cce5b1f8f3a6861e1ec81ebd94432d4762a24d80c",
+      "candidate_sha256": "d16398a96fd09054340cff36daab308147f3ea9928d4fb158c3b5b696e219048"
+    },
+    {
+      "file": "base44/functions/lexQueueControl/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "e3ac2dd9a8f2ae6a7222fef65da942fba5dcdfeb4870168ef4895103a5a0628f"
+    },
+    {
+      "file": "base44/functions/lexRecommendNode/entry.ts",
+      "baseline_sha256": "419a5f4a19af9c0f17f53818c841f20be7c90d50bf07d046c2f977de24a4887c",
+      "candidate_sha256": "4178fb254a31d95f4759d6d6bbb33d5ad9f12ab9c42da55fc99b85124ed6fb57"
+    },
+    {
+      "file": "base44/functions/lexRecordCustodyEvent/entry.ts",
+      "baseline_sha256": "a5f194b84eeea65a6dd968ed8841f12d4b221e335b166b65bdbba47da7916fb4",
+      "candidate_sha256": "8ee8d74e26c2105a850c2d33027268e5a4229d2345cfaedec9e23ead6efee1f2"
+    },
+    {
+      "file": "base44/functions/lexRecoverTransitions/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "b3ac593180a0b207ee24b1870b4a52ad7494b3412e30213360a7d2d102df30b4"
+    },
+    {
+      "file": "base44/functions/lexSandboxBooking/entry.ts",
+      "baseline_sha256": "c88380d8d4192f8158c5f5ab9989e7f4c31e84dd05d2ea2393abf3d4e746eb36",
+      "candidate_sha256": "261c1ce5a0990758f7b9c031fb4c4e69683bd29032dc7536331e59e0626ff528"
+    },
+    {
+      "file": "base44/functions/lexSyncApp/entry.ts",
+      "baseline_sha256": "e653676e7609f067cad07df788f96ce43c00c8205db5cf3b5baec8e15b66c2c5",
+      "candidate_sha256": "77e1365b980576d9a0a4c8f1a7a80643276a0364be36a45b982fd1ca8228b927"
+    },
+    {
+      "file": "base44/functions/lexSyncEngine/entry.ts",
+      "baseline_sha256": "faabbd2680b60e4b385daa9e6722015f40623f4af298611fe8cf896e4a53db3f",
+      "candidate_sha256": "ccbd1a8bd74346ce813de51e9b5dcb7f56f5b23f1d731922ea855b9a0ca7caa3"
+    },
+    {
+      "file": "base44/shared/lexAuthorityBinding.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "6dbf20f14905dcec568eeee62eeee6166526faaa78837aa34b905bcc6866514f"
+    },
+    {
+      "file": "base44/shared/lexBridge.ts",
+      "baseline_sha256": "beef44284a27576b1cfd84d2ea15b467374ce8ffba39746460e08f175442c2f2",
+      "candidate_sha256": "a5af3d5084946259677ef0a3b7571729271e638b77d726796f12e3ca9e0203ec"
+    },
+    {
+      "file": "base44/shared/lexBundleRecovery.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "50e251bbba8f6511c75eb0b97771e808965565e8162e9137478282c53a1b9f39"
+    },
+    {
+      "file": "base44/shared/lexEffectProof.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "739059fea3884dabe5ec49c7210cd57d93aac812965f3affc593f468d9e62451"
+    },
+    {
+      "file": "base44/shared/lexEngineBoundary.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "a87aae81e161155a34833012255708731a3bbeedd1e63dc5b692eb88d324fcb2"
+    },
+    {
+      "file": "base44/shared/lexEngineCreateRecovery.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "4e3ee48dc670958d1932950f8d6b4a88f4cb01ffd4b6a5fb91891c06b8eb8687"
+    },
+    {
+      "file": "base44/shared/lexEventIsolation.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "801a5286a2688edff57a8ec13601d81d8c2143b580800b5bced268787384f9a6"
+    },
+    {
+      "file": "base44/shared/lexIngest.ts",
+      "baseline_sha256": "693a47b1648c72dd944486da6b3f2080d28fb9ec905223d429435a0bca22971b",
+      "candidate_sha256": "7351e28237b4841367f9b3908b3bbb496e9acfb2ac5fad07fc7163199672edd2"
+    },
+    {
+      "file": "base44/shared/lexIngressAuthority.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "f565faf51c385ad45ec10483307792b8eb2e82e7df401b5bedf80b6a2095a3fd"
+    },
+    {
+      "file": "base44/shared/lexMerchantContext.ts",
+      "baseline_sha256": "134557f20e04a6b05e67e1b17a8c9c19dbb310e5cced6a424351c8f2e326c910",
+      "candidate_sha256": "d7fff5e51440a0aa3dd90210031471a8b6ed036ea3a92d32bedd32d4ac2b88b8"
+    },
+    {
+      "file": "base44/shared/lexOperationalAuthority.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "2bc02bd67a1589ea748607daa766411bc7ff54a8f67d719c6dd704f905420191"
+    },
+    {
+      "file": "base44/shared/lexPackageMapping.ts",
+      "baseline_sha256": "66bd72be0efe683a7b567938e41e8a2651f4cfdc664ac175af632efb26489ba2",
+      "candidate_sha256": "d8d9bf89c8826c643b98446fdd014573c8076955f8d5a29167bcdbde55e179d9"
+    },
+    {
+      "file": "base44/shared/lexPullProtocol.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "5c6cd1234e9d137f79856eb30225068a41d575898ca71caecef8bd893a24b900"
+    },
+    {
+      "file": "base44/shared/lexQueueSubmission.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "7b2ba719c663e151c5d55fe6bcff5757a4a5e56e299ae2046f3ea2da094df8aa"
+    },
+    {
+      "file": "base44/shared/lexRenderAdapter.ts",
+      "baseline_sha256": "8bc3fea14f11b95ef8f30cb2392f784c3e2f41b782c5fc1ae88e9fa55f41d486",
+      "candidate_sha256": "7d1c079bd829068f9e2bc423fac1896e9b1b2e07abadc5b7be496a2951b3f46f"
+    },
+    {
+      "file": "base44/shared/lexSandbox.ts",
+      "baseline_sha256": "43377eaa631d86922cd493065d8d164dab45158c4164b9101ffe4e72c2193535",
+      "candidate_sha256": "2efeac7ab565b9fc5023381ae7d9ded022be40f5e602b8aaf5fd80113c00e29e"
+    },
+    {
+      "file": "base44/shared/lexTaskAuthority.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "6beb22747dda997561643393793cec8a9905c7445cd39902fc4b00dcb11ca7bb"
+    },
+    {
+      "file": "base44/shared/lexTransitionRecovery.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "fe88475c9f4669436d1fff6f6c96f1456504718f62a6bf794e2c4b26f92e0e97"
+    },
+    {
+      "file": "base44/shared/lexTransitions.ts",
+      "baseline_sha256": "993d6ad7f35d2c9c3857d54c05516a477364e060e0cd4041391a4f9dad5d64bc",
+      "candidate_sha256": "947e068a1bd9d137c417fe6cb96100be4215ed1441c74f5b5317c718e2a9eaad"
+    },
+    {
+      "file": "base44/shared/lexTrustedIsolation.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "63223739e1fb5e9513c1c2f79b11348ad602e40af66f562b95597fa3b32de8a9"
+    },
+    {
+      "file": "base44/shared/lexUtils.ts",
+      "baseline_sha256": "664bc049538916023044a509065a0900be73e7abab258be3d1d5f4b5bef6d01e",
+      "candidate_sha256": "6c0c9be73da4a64832b57ef9674f2285ae009ae8827a4a66c9ce9e82d3a78534"
+    },
+    {
+      "file": "src/components/lex2/QueuePanel.jsx",
+      "baseline_sha256": "76bac3a4119b224609ba75095c132b13fe07a7f92a7388f80a03d6f26374cd5f",
+      "candidate_sha256": "7d4e75fc387540e28c1fa9fae8ed2a0ea170cf53634dda48248f51811b0404cc"
+    },
+    {
+      "file": "src/components/lex2/lexQueueClient.js",
+      "baseline_sha256": null,
+      "candidate_sha256": "8bb6e91d8b38ddbc1a02cabd01e46eef40362b25a9dad71fcb40b3d6f5773796"
+    }
+  ],
+  "missing_dependency_export": {
+    "sha256": "d04933586d026c3ede8f4897fdfca5e570d8803d59b8ce0fb6447e7bdb059697",
+    "bytes": 86025,
+    "lines": 2670,
+    "full_files_added": [
+      "base44/shared/lexIngest.ts",
+      "base44/shared/lexPackageMapping.ts",
+      "base44/shared/lexRenderAdapter.ts",
+      "base44/entities/Shipment.jsonc",
+      "base44/entities/CommunityCarrier.jsonc",
+      "base44/entities/OrchestrationTask.jsonc",
+      "base44/entities/PlatformConnection.jsonc",
+      "base44/entities/PlatformDelivery.jsonc",
+      "base44/entities/DeadLetterEvent.jsonc",
+      "base44/entities/ShipmentLifecycleEvent.jsonc",
+      "base44/entities/ChainOfCustodyEvent.jsonc",
+      "base44/entities/AuditLog.jsonc",
+      "base44/entities/SmartBundle.jsonc",
+      "base44/entities/FraudAlert.jsonc",
+      "base44/entities/Incident.jsonc",
+      "base44/entities/StaffAccess.jsonc",
+      "base44/entities/Notification.jsonc",
+      "base44/functions/lexIngestWebhook/entry.ts"
+    ]
+  },
+  "hosted_probes": "PASSED_DISPOSABLE_ONLY; operational entities/service-role unverified",
+  "package_version": "2026.10.31-rc1",
+  "disposable_probe_prerequisite": "satisfied; operational entities/service-role unverified",
+  "application_readiness": "selective overlay to complete existing isolated review copy with gates closed; not live cutover"
+}

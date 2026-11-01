@@ -1,0 +1,386 @@
+{
+  "source_zip_sha256": "2d7497d9cc58dda83e62c98e1e34728f6ad0259976ee251b831ac8f666d0e593",
+  "status": "scoped-implementation-complete-hosted-acceptance-unverified",
+  "booking": "closed",
+  "files": [
+    {
+      "path": "base44/entities/AuditLog.jsonc",
+      "baseline_sha256": "91a7ce5e47b57cd1d2d6d9d9808f1c2dab37c5a741312a791cbcc8e2a7560840",
+      "candidate_sha256": "1ca52a95e977fd5afb19c1d8018bdc393fea8a2c10bb19fdafec1ef2fde0707f"
+    },
+    {
+      "path": "base44/entities/ComplianceReview.jsonc",
+      "baseline_sha256": "4ebf66f5020a4c1f8c0c19c5c97de854f32409a3904be990cb12ef469bd0fcfe",
+      "candidate_sha256": "49a819fdd99ef58cee1269ffc9c94cfbebd637cde017fb6e8e1a64bdd9170693"
+    },
+    {
+      "path": "base44/entities/LegacyShipmentAuthority.jsonc",
+      "baseline_sha256": null,
+      "candidate_sha256": "938f4cab7b35edb728db9ea2b02877c72881b556cff76a005828459a6b45eaab"
+    },
+    {
+      "path": "base44/entities/Notification.jsonc",
+      "baseline_sha256": "9875ce6be4a1fa0d55b0cd457ea470a96e5dc9b197a8867af4092a0672a622bd",
+      "candidate_sha256": "1c195fafe21e6e096f6dcc26df2ce773cc1c82dd1477e50786a0a224f9c1c6fe"
+    },
+    {
+      "path": "base44/entities/Shipment.jsonc",
+      "baseline_sha256": "baae1138435c4169db640b817c263c00b7b1d5caaefe08f762be532b5c3743e7",
+      "candidate_sha256": "6ec5bb7c42493ff2c91571fdb79c1332678df8e3b480161c3e56e6eb5fb2d77b"
+    },
+    {
+      "path": "base44/entities/ShipmentDraft.jsonc",
+      "baseline_sha256": "ee77c365ee064bf0868e0c370d98689ccd53cd4325df1ac267f69b85b3d86911",
+      "candidate_sha256": "762cf64886fd5fa7555459141b6ca3155ff48e3314d4b65ca8534f85fba4397a"
+    },
+    {
+      "path": "base44/entities/ShipmentEvent.jsonc",
+      "baseline_sha256": "14c9e7fbdab2fb2c381855c7e5fe07439a8390cb78d18f976b5abce8f33ea6c0",
+      "candidate_sha256": "3abd4c78785f64fb81ed6de4fa940015b9423a3384436c2cd05317866bd2071e"
+    },
+    {
+      "path": "base44/entities/ShipmentQuote.jsonc",
+      "baseline_sha256": "a0ad11bb3494bfb453775583f8ee8a96bf819e2de2156bb275d2cc0867db2eab",
+      "candidate_sha256": "a3390770443aa8c76d5e3c9d3eabba6f561c55bae6b7bb4e1cd5c594186506bd"
+    },
+    {
+      "path": "base44/entities/ShipperDeclaration.jsonc",
+      "baseline_sha256": "e2bf3297e8926706e5df2ead786526140d219ce76a6d51f3a3d5c54099fec881",
+      "candidate_sha256": "d436de0acccd559c1933e368ef041b23750114c3daa20029f21415565a76b8d6"
+    },
+    {
+      "path": "base44/functions/archiveMerchantShipment/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "6a7a95c6e2b6b8a0e59f08a5f3fa8c751d649b7e6c4757641d8fc810d7f4efb9"
+    },
+    {
+      "path": "base44/functions/awardShipmentRewards/entry.ts",
+      "baseline_sha256": "91c436224c08034c5cad606ab3d6f060fedbe897093aaf8a542c0456e7b6a1b5",
+      "candidate_sha256": "b66c77939ce7f92bddd86e269e18f95dc376bd3d87c956e54b7a3164a43b9b8a"
+    },
+    {
+      "path": "base44/functions/cancelOrderGate/entry.ts",
+      "baseline_sha256": "c7874e640d8f53928e936ad8aa153c553b1d446717c27920d85fb705b6756133",
+      "candidate_sha256": "49626668ddcedd0eb61e0a8b2b79233d60f46889b0ddc7c46aa64a242bdc8df1"
+    },
+    {
+      "path": "base44/functions/cancelOrderOnDomain/entry.ts",
+      "baseline_sha256": "625b633d228f49f8885fee41931910a299c2ef166a46d71328b17b562b641535",
+      "candidate_sha256": "7f7aa2d02f356fddc7ef3c6fe0f1230d77f2282840eaafdf8fe7128ce746b34f"
+    },
+    {
+      "path": "base44/functions/createCardSetupSession/entry.ts",
+      "baseline_sha256": "5b8b087f1e2e134904e1e389252c41af5456a4786b0ef6bf76e3da241568cf86",
+      "candidate_sha256": "fbdee6681b0d485ac84ea306a0795d19e577d27e0c28669f6522a834e63cb0af"
+    },
+    {
+      "path": "base44/functions/createControlledTestShipment/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "50f9168090c3bea39edde10908fc55a84fb25ae20689639699a9d22705e8f6a7"
+    },
+    {
+      "path": "base44/functions/createOrderOnRender/entry.ts",
+      "baseline_sha256": "246218ae960bf60c32d8637e5bc34cb7caedd5a8b086612c3a3fe277e11a36ce",
+      "candidate_sha256": "66b59d75aeabf088c64bd17d7fb348e370ac6fb7d21e239c7cce22f921316991"
+    },
+    {
+      "path": "base44/functions/createTestShipment/entry.ts",
+      "baseline_sha256": "9a8162571f8000a98ab89a281ee999b591056bb2a42c48c0b0b425acbbb933c2",
+      "candidate_sha256": "a6043757748b165b501e8b0149a39dcd6acd08fa468a43d0545fddf5a9f8daa7"
+    },
+    {
+      "path": "base44/functions/deleteMyAccount/entry.ts",
+      "baseline_sha256": "51d7aeda465d8bcd79be5ac7779adf26e916f9680869b8c734e632a906781ffa",
+      "candidate_sha256": "48a589dcc3e7534ec3d4c1c42607de396ab95510f6eca83cef7c25215f3b57e5"
+    },
+    {
+      "path": "base44/functions/dispatchPlatformEvent/entry.ts",
+      "baseline_sha256": "31cb018ffa47b8364224152c29cb0b7941cc026243e9a090207f7cae678239ee",
+      "candidate_sha256": "b86961e17b3d4f523641c697ec329ff976ac6107cced7bfaca8438a004d3babf"
+    },
+    {
+      "path": "base44/functions/finalizeShipment/entry.ts",
+      "baseline_sha256": "4cd21840ecfd86c867842da076319936ed8e66b4cd1fdaf957020f7ed8ac5c15",
+      "candidate_sha256": "c66b08124cfd28c30768145f10e62e27b0b20056fe2c68fcc6e498f1e308308d"
+    },
+    {
+      "path": "base44/functions/lexPushToHub/entry.ts",
+      "baseline_sha256": "83a84f4aad73eb87fb6ebc4390f6cecbbc7d0cade56cb66cea68cdefdeec5b45",
+      "candidate_sha256": "d2799dd06b5c236c8978cda8957f89043755822abcfff0c00604009d19316487"
+    },
+    {
+      "path": "base44/functions/lexSyncEndpoint/entry.ts",
+      "baseline_sha256": "f977e9d36a56d1360f3357b5f789b44f45dacabecca3901a4061ac884ac19409",
+      "candidate_sha256": "cd25687dc7ad74fe20bd1bd114ab32af705e7d16bd93d4e87386b6ffd79347f6"
+    },
+    {
+      "path": "base44/functions/lexWebhookReceiver/entry.ts",
+      "baseline_sha256": "1b62f9a6ec4ae4a573e5262ba1ff559d94d6765b842f569a34535e7a67c74017",
+      "candidate_sha256": "d43a028126f9e0113f2efd0913f129a5a7b83d67d4b88276883584e09b34636c"
+    },
+    {
+      "path": "base44/functions/listPaymentMethods/entry.ts",
+      "baseline_sha256": "340884230bd7cd969a44f9a74532ed754232a6f37828f1b95e179ba6056d125f",
+      "candidate_sha256": "f1e03fea570e2d40ca3eaee63aae2c1b4eb5e5160065a1ccdab46400252edb0f"
+    },
+    {
+      "path": "base44/functions/merchantDraft/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "4620729c0a668fb4ea8cf21b3d462b805384451bb850de60e57e38671b19c1b5"
+    },
+    {
+      "path": "base44/functions/merchantShipmentRead/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "6924096a793602aacd164643120123870a4afe1b3cfb262a08ffa60c86eac21d"
+    },
+    {
+      "path": "base44/functions/notifyShipmentStatus/entry.ts",
+      "baseline_sha256": "419372c7ef794d892e9a73e02acde7aad33e4afa4700e028376d978c33d1f9f1",
+      "candidate_sha256": "4f864123c3ba417c91ae8f5cf7d51e71a39060b2c225950246b5f5bfbda98be4"
+    },
+    {
+      "path": "base44/functions/partnerCustody/entry.ts",
+      "baseline_sha256": "ddeddf68ad071e831c305d6e00295c55a9978990037c31c7005a18b88cf0e696",
+      "candidate_sha256": "6011fa02034301143e9176558f05db263fd22147a9198e251224c5b5df4605ab"
+    },
+    {
+      "path": "base44/functions/prepareTestShipment/entry.ts",
+      "baseline_sha256": "0ad523a955727c766201f3d2564b8c84712383db8da24969ead845050912fe0d",
+      "candidate_sha256": "681e6b025f21e06d3054df9fd2e27086f0b333ca7bf466eec58a31aae0ab4490"
+    },
+    {
+      "path": "base44/functions/pudoShipmentSync/entry.ts",
+      "baseline_sha256": "6b28db88d04cac352a1405489fb792399c29938396c637f761e0d25c0a36d55a",
+      "candidate_sha256": "1e5dcf9f80eada6b3b2dec512545e39b27cfe5c0992f5be247bc556682f365a4"
+    },
+    {
+      "path": "base44/functions/requestLiveRate/entry.ts",
+      "baseline_sha256": "f43e05cf4f4c600d9f41e8da5a03df39a83b39039f39b994634069f365580124",
+      "candidate_sha256": "1ec1a03f0963bcb1a1f7ed27c314005f34b2d885c1fd05f9cf83ca1a84fb4f8e"
+    },
+    {
+      "path": "base44/functions/retryPlatformEvents/entry.ts",
+      "baseline_sha256": "34eedeefa68510d94d753becaf1a9a0156c10f98cb6e1e24a6451e62161409b7",
+      "candidate_sha256": "7316555eeb916578005735061145e6823ea5660d86f5720f257908101001cd4f"
+    },
+    {
+      "path": "base44/functions/reviewLegacyShipment/entry.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "41919fd1a5783aeb51d7486a852b6ed3084ea505dc9d80d969b7c5e7e9e62cc7"
+    },
+    {
+      "path": "base44/functions/stripeWebhook/entry.ts",
+      "baseline_sha256": "f80e68f668ead36869d958d90d2156b6f2d5a5c51f172de1b50f9e3d4813241d",
+      "candidate_sha256": "637546d180cad7b66dd6a9e55301536f370193185892a14ba8da5f0dec8dffb2"
+    },
+    {
+      "path": "base44/functions/validateShipmentCompliance/entry.ts",
+      "baseline_sha256": "018ab3da9e8dae7bb262162c2b758be99c09cfcf0167b7b01a9c2752bcb7244d",
+      "candidate_sha256": "6c366d9e112d53d7512df1574d0de9310010a4dee142d911efb97e7dc9d80913"
+    },
+    {
+      "path": "base44/functions/walletDeposit/entry.ts",
+      "baseline_sha256": "98192bd989e0d419a45dbc936e2d2a47b1a55f7da6a517b5b92a323aae3b1bf8",
+      "candidate_sha256": "fb9f7c71c10de466a1ae724a2b771d35c1ceb630267dec944cf1d4a0aba3dc18"
+    },
+    {
+      "path": "base44/functions/walletWithdraw/entry.ts",
+      "baseline_sha256": "2d35bc440b4a50e4feb1bd38c2f5b6fa56baf6e23b00b77122910a3911b4b171",
+      "candidate_sha256": "1ef3d0bbf78fcbb2a0902b2e4453ba789a205085335c425bdd808845bf0a2a11"
+    },
+    {
+      "path": "base44/shared/artifactProjection.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "e9cb851b35353af8e9411bfa4399906837bb950f5736755d73b9f5c571cc3e76"
+    },
+    {
+      "path": "base44/shared/bookingException.ts",
+      "baseline_sha256": "bd6bfb4125ab193c8cc1d5a481accf5235b629af9fc50a2a24aa3dd5a28ae980",
+      "candidate_sha256": "a4e43bdf5840306f238054dca0f5f6883f87e3bdaf9164fa40e1d5099b52ef3c"
+    },
+    {
+      "path": "base44/shared/bookingMerchant.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "50fc828d544c4a74d3533ce2a0a6822609da4d4323c197974447a823de687e5a"
+    },
+    {
+      "path": "base44/shared/canonicalRead.ts",
+      "baseline_sha256": "fea7124f41a774708cd7acaf687b7dba6bb3c4bff41a335bdf43ab9b8a54042e",
+      "candidate_sha256": "8a7dd3784c464f0b9990966cd6d0ae39ae49d12d9da75ea0d35dc46efa5d148e"
+    },
+    {
+      "path": "base44/shared/casBooking.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "1c8a6ab589de0ed7a67266c12fa02b892f833ee692c3175bcd7cdeeaab1700e7"
+    },
+    {
+      "path": "base44/shared/complianceBooking.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "e8e899a1029528a4fbaf25d8d7e59ef33a39c33c13f33585b24e02de098aecd4"
+    },
+    {
+      "path": "base44/shared/containmentResolver.ts",
+      "baseline_sha256": "78789f8e0bf862f8a040638baae5db44fc3e0831be51cabc23f4b0fb972d4bac",
+      "candidate_sha256": "12b6607822c9ae2dda723e5271348aeaacef84fc469f779b4efe25d004621911"
+    },
+    {
+      "path": "base44/shared/custodyRecovery.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "99d52b9ca5b9f33a17ad80611396d3811d2e87ac1feb7e55c69f629cdbcf1de6"
+    },
+    {
+      "path": "base44/shared/customerShipment.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "5cf9325e2854b23eebe9db514babcc8925fb0e49685c6bdb935c9d9d04a2104b"
+    },
+    {
+      "path": "base44/shared/declarationProjection.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "7e02c879a66873a419b4190d941085039e1d6644f64f05551ac114dfcfdb56e4"
+    },
+    {
+      "path": "base44/shared/domainIds.ts",
+      "baseline_sha256": "28800aeb7ab11d1e9a6017a63bbec9521aaa97cd024c43246124b3b7ddfd8733",
+      "candidate_sha256": "46b270431d4c749a9f701f50c8560661bdd1551293c8b1561de08b6d4c6d4343"
+    },
+    {
+      "path": "base44/shared/legacyReview.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "7be2072719f0a9a828c7cfbb981aa5d230276c0492be1baeadda7262a278f639"
+    },
+    {
+      "path": "base44/shared/platformSync.ts",
+      "baseline_sha256": "75c8c5e6c208910a49aa81438132c6939948691692a25e7865240dbf75a67030",
+      "candidate_sha256": "cf21cdef661acf4932b344f3eecea27b0e1083b4cf00a4ca0b391373418789ce"
+    },
+    {
+      "path": "base44/shared/serverRecord.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "682c4e057d80b3a3ed2872baa95383dcd2c212198de1623d2cb2c8a10d3639ba"
+    },
+    {
+      "path": "base44/shared/shipmentAuthority.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "5d566670d4544e8ee2f529ebf01dd8b330872289f934efb993947c9d9986d872"
+    },
+    {
+      "path": "base44/shared/stripeCustomer.ts",
+      "baseline_sha256": "74e5ebea5d90f65f5acfb1f90c41cc272cba2eaa765f44e9fe5ed1d34ef2798c",
+      "candidate_sha256": "0cbd49b1cb2ea05d33e4e03419cd0e1d6f0cb5bb08bee1104104fe8e003c011f"
+    },
+    {
+      "path": "base44/shared/syntheticPaymentGuard.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "70bc004c0b32848939192acfc993139f6ce248b8f8b7ed65013c84b937bdfcac"
+    },
+    {
+      "path": "base44/shared/trustedShipmentEvent.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "aba08a888d35e42dc8e2c2e5f044c494d86c1163ac16527b4a0f68a70df56991"
+    },
+    {
+      "path": "base44/workflows/Push Package Events to LEX Hub.jsonc",
+      "baseline_sha256": "844ca894b8865091c02948defe5f44c74f1bf2af1fd88e83fcceb51d9f188cae",
+      "candidate_sha256": "6cf26fba89d511549e7fdd3e12d8df0ce66281e845014c80de96f8c019418791"
+    },
+    {
+      "path": "base44/workflows/Send Live Feed to LEX.jsonc",
+      "baseline_sha256": "d2089c53082ff3ec838bdf7dd515d5f784c7959d51e9e1f2079e0acd0f44c127",
+      "candidate_sha256": "f7bfe06af0165a98fb1f11561c15d9cc411be4899445f43fea6085de2f558966"
+    },
+    {
+      "path": "src/components/dashboard/IncompleteShipments.jsx",
+      "baseline_sha256": "b00cfe93e44c7b58584dea7ebff190ce8adf01baa02f9a8be6298368317fb05e",
+      "candidate_sha256": "5275231420a90f16a8c1935ea41e8cb3573365f34991a855bc16154551c3fb38"
+    },
+    {
+      "path": "src/components/dashboard/RenderTestShipmentControl.jsx",
+      "baseline_sha256": "1698bc928ec85af2a86d31b159b7b3e6be73bddf86f11505c8086fe398b1a927",
+      "candidate_sha256": "f7700d0882e56402cd26020e870cdb5fbaccbdb98717db5bf100036c4e98f6f7"
+    },
+    {
+      "path": "src/components/dashboard/homes/IndividualHome.jsx",
+      "baseline_sha256": "4964ff54cd1a450c45c0c6b141c8739fac12d8190d16e749c9779b7ca96f9d2d",
+      "candidate_sha256": "41cee6f3724b0959971b7ef28b74511769dac878864a9e78f94b2901c3872457"
+    },
+    {
+      "path": "src/components/dashboard/homes/OrganizationHome.jsx",
+      "baseline_sha256": "e4ab11ff05ddacf070588fab158905e8e4ea661e6f8e46ebdfa320a23a006cdd",
+      "candidate_sha256": "dc8037b4d7e911b123764bb1cb098d19bdef1576dcddde9a1e6c8ee765b460fb"
+    },
+    {
+      "path": "src/components/shipment/BulkImportModal.jsx",
+      "baseline_sha256": "e2b62ab8cb06dc60e69da29b5be9f2702b42ffcce03243bdb6c8c4d3089f24ea",
+      "candidate_sha256": "173f16adc3adc5fe2c78512315d87e75f1d9a7203d16aca5e1614055a3ee480f"
+    },
+    {
+      "path": "src/components/shipment/TrustTab.jsx",
+      "baseline_sha256": "42233fd27608b59753ddc44583bd14eb1ca170936fcbeb7247d8c834a0eb6f54",
+      "candidate_sha256": "693feebd9b5ff61097f0af8c7c704f4a908da22033e598d55fe141a894d51491"
+    },
+    {
+      "path": "src/hooks/useShipmentDraft.js",
+      "baseline_sha256": "0a1a4a7be33cdc3e1caea09dcd47238c138ac096d2845a497c48f37e48fe958b",
+      "candidate_sha256": "31751b286bc20dc5bbc2442ec1f3a3ccae47d802bf6a1cbe0dcddd786f78b00c"
+    },
+    {
+      "path": "src/lib/merchantShipmentReads.js",
+      "baseline_sha256": null,
+      "candidate_sha256": "3f43cc4cf3fbb5e16e962b11cc9f63d8bfc581f198a9d2617a0544f10a02eefc"
+    },
+    {
+      "path": "src/pages/DeleteAccount.jsx",
+      "baseline_sha256": "8ff51bef8abae5ca5b5efb6e64d8b279e5f613f26c95c0cdb45de358af78de99",
+      "candidate_sha256": "eac96309057edb71785433eeeb6e1b7b00868020dc7ec9a25ae67168a964820b"
+    },
+    {
+      "path": "src/pages/dashboard/Analytics.jsx",
+      "baseline_sha256": "65531efda44c068efd207bc49013824e05278b71527a8fdb6a658e433065a9b7",
+      "candidate_sha256": "3d1c806e6adb902b02917b99975d44ba2bee3775915958833940a1fdef7cb269"
+    },
+    {
+      "path": "src/pages/dashboard/Claims.jsx",
+      "baseline_sha256": "3e29174021fa10ae7a70a796d304b3925c917f7d8a82d4eb1bbacd7d558a3cd6",
+      "candidate_sha256": "9cd9cd80c38ffa306308a05653a3c9bbdc5eccd85fe8acb9191899020340b80f"
+    },
+    {
+      "path": "src/pages/dashboard/ComplianceReviewPage.jsx",
+      "baseline_sha256": "88a1e12633b5ccf2968a822215daae94d6c51f93e400c231f93870a51df74195",
+      "candidate_sha256": "88fbde7f309e1870940f86c1fd2b6eb304d20aad6e7b37677f0dcaf8635d6115"
+    },
+    {
+      "path": "src/pages/dashboard/CreateShipment.jsx",
+      "baseline_sha256": "aa68ab7a01b0703cf2284c44ee12f463c7642473669755908ae524baaaff8faf",
+      "candidate_sha256": "c1c347347c8d5200707e2f2837ac1adc7caf5b7a44dcb63326d792c6848e3eb2"
+    },
+    {
+      "path": "src/pages/dashboard/PudoReady.jsx",
+      "baseline_sha256": "a5d81ed09fbdc651f41db8080869f69d645409149abe4faea2efa14d5d7211b5",
+      "candidate_sha256": "7f7016ec9d85ad80aa4ad0f2c27d060414ff575508da76983aa683cb89697b37"
+    },
+    {
+      "path": "src/pages/dashboard/Returns.jsx",
+      "baseline_sha256": "c55037762997275dc3af3f6d499e20744289b76ae360cbe5f0ec91d3fb7fed4f",
+      "candidate_sha256": "b5c5f0f41452129eed94f38e68f9f29943a6143978249be5df23b3afe358444c"
+    },
+    {
+      "path": "src/pages/dashboard/Track.jsx",
+      "baseline_sha256": "d3ec40e2e9d819428594c772872a54a08627907507464d71ca35e56b68d3676d",
+      "candidate_sha256": "38b5520ab714953f93be908a00c48d29fb9a8489d2f6cb69a990427c92e949e5"
+    },
+    {
+      "path": "base44/shared/lexPullProtocol.ts",
+      "baseline_sha256": null,
+      "candidate_sha256": "d704b3c3364066ff78f566d21747d3ad9cfb0e7019059a0f866f979bfbab5c41"
+    },
+    {
+      "path": "base44/entities/LexPullPeer.jsonc",
+      "baseline_sha256": null,
+      "candidate_sha256": "a2dff6194525fd749661c23394ae8eb9e9a77fffcd45a60f2db53e62c9db3760"
+    }
+  ],
+  "policy_correction": "admin-only supported rules; ordinary-user denial vs admin/service-role trust; hosted unverified",
+  "package_version": "2026.10.31-rc1",
+  "disposable_probe_prerequisite": "satisfied; operational entities/service-role unverified",
+  "application_readiness": "selective overlay to complete existing isolated review copy with gates closed; not live cutover"
+}

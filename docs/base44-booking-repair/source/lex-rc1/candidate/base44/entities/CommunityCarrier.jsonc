@@ -1,0 +1,132 @@
+{
+  "name": "CommunityCarrier",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Authenticated app user authorized to act as this carrier. Null means unmapped \u2014 custody actions fail with an actionable error until an admin links it."
+    },
+    "api_key_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the carrier API key issued to the external carrier app (Rork). The plaintext key is given to the carrier out-of-band and never stored. lexCarrierGateway hashes the incoming Bearer key and matches it here to resolve carrier_id. Null means no key issued; admin issues via lexCarrierGateway issueApiKey."
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "current_lat": {
+      "type": "number"
+    },
+    "current_lng": {
+      "type": "number"
+    },
+    "route_origin": {
+      "type": "string"
+    },
+    "route_destination": {
+      "type": "string"
+    },
+    "intermediate_stops": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Explicitly supported intermediate locations used for eligibility"
+    },
+    "departure_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "arrival_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "capacity_total_kg": {
+      "type": "number"
+    },
+    "capacity_used_kg": {
+      "type": "number",
+      "default": 0
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "sedan",
+        "suv",
+        "van",
+        "truck",
+        "bike",
+        "walker"
+      ]
+    },
+    "service_levels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rating": {
+      "type": "number",
+      "default": 5
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "assigned",
+        "in_transit",
+        "offline"
+      ],
+      "default": "available"
+    },
+    "total_deliveries": {
+      "type": "number",
+      "default": 0
+    },
+    "lex_capacity_revision": {
+      "type": "number"
+    },
+    "lex_capacity_journal": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "route_origin",
+    "route_destination"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

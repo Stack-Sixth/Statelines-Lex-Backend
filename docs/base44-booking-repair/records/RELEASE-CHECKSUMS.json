@@ -1,0 +1,20 @@
+{
+  "lex-boundary-patch": {
+    "version": "2026.10.31-rc1",
+    "archive": "statelines-lex-boundary-patch.zip",
+    "sha256": "982be1196a8d06f50cf2baa6a4ecc60f5fd73fad11071c9b5fbf8634dc8ddcfe",
+    "bytes": 550294,
+    "changed_files": 58,
+    "zip_integrity": "pass",
+    "manifest_hashes": "pass"
+  },
+  "merchant-controlled-test-patch": {
+    "version": "2026.10.31-rc1",
+    "archive": "statelines-merchant-controlled-test-patch.zip",
+    "sha256": "1388d6f344a2ba35cefc6ad51001a84944036037072e50651186f47101754944",
+    "bytes": 328702,
+    "changed_files": 75,
+    "zip_integrity": "pass",
+    "manifest_hashes": "pass"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Push Package Events to LEX Hub",
+  "description": "Forwards every shipment custody/status event to the LEX hub's ingest webhook via lexPushToHub (HMAC-signed), skipping events that originated from LEX to avoid echo loops.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "ShipmentEvent",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ (.trigger.data.custodian // \"\") != \"LEX\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "push_package_events_to_lex_hub",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "push_to_hub": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexPushToHub",
+            "args": {
+              "event": "custody_event",
+              "shipment_id": "${ .trigger.data.shipment_id }",
+              "data": {
+                "location": "${ .trigger.data.location }",
+                "custodian": "${ .trigger.data.custodian }",
+                "verification_method": "${ .trigger.data.verification_method }",
+                "occurred_at": "${ .trigger.data.occurred_at }"
+              },
+              "source_event_id": "${ .trigger.data.id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Push event to LEX hub",
+            "description": "HMAC-signed forward to hub ingest"
+          }
+        }
+      }
+    ]
+  }
+}

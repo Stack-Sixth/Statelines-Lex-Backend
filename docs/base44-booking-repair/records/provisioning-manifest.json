@@ -1,0 +1,11 @@
+{
+  "status":"PREPARED_NOT_PROVISIONED",
+  "candidate_revision":"1ae720e2d7977a9e1ca66a1f620f20af6fa2a067",
+  "general_booking":"closed",
+  "test_exception":"closed",
+  "identities":[
+    {"label":"Alpha","merchant_user_id":"6ae36074e14192b2f7f51dc7","merchant_local_id":"6ae36089acdf77499fbf16d5","merchant_register":"SYNTH-BIZ-0001","lex_business_reference":"SBX-BIZ-ALPHA-001","lex_mapping_id":"6ae34e39a9b77923c0e445ab","client_id":"sbx-alpha-lex-01","allowed_roles":["merchant"],"approved_subjects":["sbx-alpha-lex-01","6ac144d7ba5eefb2dc02e410"],"merchant_subject":"sbx-alpha-lex-01","lex_subject":"6ac144d7ba5eefb2dc02e410","canonical_merchant_id":null,"actual_merchant_domain_link_id":null,"merchant_secret_names":["LEX_DOMAIN_SYNTH_A_CLIENT_ID","LEX_DOMAIN_SYNTH_A_CLIENT_SECRET"],"lex_secret_names":["LEX_SANDBOX_ALPHA_CLIENT_ID","LEX_SANDBOX_ALPHA_CLIENT_SECRET"]},
+    {"label":"Beta","merchant_user_id":"6ae36bfacc7ef5a364d5403f","merchant_local_id":"6ae36c0f51cbdef3e3e7b3c7","merchant_register":"SYNTH-BIZ-0002","lex_business_reference":"SBX-BIZ-BETA-002","lex_mapping_id":"6ae34e396fbaac9f2498224f","client_id":"sbx-beta-lex-02","allowed_roles":["merchant"],"approved_subjects":["sbx-beta-lex-02","6ad55271cafef064e29ff2dd"],"merchant_subject":"sbx-beta-lex-02","lex_subject":"6ad55271cafef064e29ff2dd","canonical_merchant_id":null,"actual_merchant_domain_link_id":null,"merchant_secret_names":["LEX_DOMAIN_SYNTH_B_CLIENT_ID","LEX_DOMAIN_SYNTH_B_CLIENT_SECRET"],"lex_secret_names":["LEX_SANDBOX_BETA_CLIENT_ID","LEX_SANDBOX_BETA_CLIENT_SECRET"]}
+  ],
+  "configuration_rules":["Keep dedicated values unset until rollout/provisioning prerequisites pass","Preserve every existing API_CLIENTS_JSON client","Both apps use the trusted LEX_API_URL; obsolete sandbox origin fields remain unused","Scope the exception to synthetic business plus exact identity, never all actions by the test users","Record each actual provisioned MER ID and each actual Merchant DomainMerchantLink; local IDs are not interchangeable"]
+}

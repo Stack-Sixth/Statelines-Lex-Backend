@@ -1,0 +1,427 @@
+{
+  "name": "Shipment",
+  "type": "object",
+  "properties": {
+    "merchant_id": {
+      "type": "string"
+    },
+    "merchant_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "created",
+        "awaiting_payment",
+        "awaiting_dropoff",
+        "received_at_origin",
+        "carrier_assigned",
+        "picked_up",
+        "in_transit",
+        "received_at_destination",
+        "ready_for_collection",
+        "out_for_delivery",
+        "delivered",
+        "collected",
+        "cancelled",
+        "exception",
+        "delayed"
+      ],
+      "default": "created"
+    },
+    "service_level": {
+      "type": "string",
+      "enum": [
+        "saver",
+        "standard",
+        "priority",
+        "express",
+        "same_day",
+        "overnight"
+      ],
+      "default": "standard"
+    },
+    "intake_method": {
+      "type": "string",
+      "enum": [
+        "dropoff",
+        "pickup"
+      ],
+      "default": "dropoff"
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "home",
+        "location_collection"
+      ],
+      "default": "home"
+    },
+    "origin_address": {
+      "type": "string"
+    },
+    "destination_address": {
+      "type": "string"
+    },
+    "origin_city": {
+      "type": "string"
+    },
+    "destination_city": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "origin_location_id": {
+      "type": "string"
+    },
+    "origin_location_name": {
+      "type": "string"
+    },
+    "destination_location_id": {
+      "type": "string"
+    },
+    "destination_location_name": {
+      "type": "string"
+    },
+    "drop_off_code": {
+      "type": "string"
+    },
+    "drop_off_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "weight_lb": {
+      "type": "number",
+      "default": 0
+    },
+    "weight_kg": {
+      "type": "number",
+      "default": 0
+    },
+    "package_size": {
+      "type": "string"
+    },
+    "length_in": {
+      "type": "number",
+      "default": 0
+    },
+    "width_in": {
+      "type": "number",
+      "default": 0
+    },
+    "height_in": {
+      "type": "number",
+      "default": 0
+    },
+    "declared_value": {
+      "type": "number",
+      "default": 0
+    },
+    "insurance": {
+      "type": "boolean",
+      "default": false
+    },
+    "locker_id": {
+      "type": "string"
+    },
+    "qr_code": {
+      "type": "string"
+    },
+    "carrier_id": {
+      "type": "string"
+    },
+    "tracking_number": {
+      "type": "string"
+    },
+    "tracking_id": {
+      "type": "string"
+    },
+    "eta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cost": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "quoted_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Server-derived amount from the accepted quote"
+    },
+    "quote_id": {
+      "type": "string",
+      "description": "ShipmentQuote record the merchant accepted"
+    },
+    "quote_ref": {
+      "type": "string"
+    },
+    "quote_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rate_version": {
+      "type": "string",
+      "description": "Pricing engine version used to derive the amount"
+    },
+    "pricing_authority": {
+      "type": "string",
+      "default": "statelines_rate_engine"
+    },
+    "payment_capture_status": {
+      "type": "string",
+      "enum": [
+        "not_captured",
+        "authorized",
+        "captured",
+        "failed",
+        "refunded",
+        "synthetic_disabled"
+      ],
+      "default": "not_captured"
+    },
+    "payment_method_id": {
+      "type": "string"
+    },
+    "payment_method_label": {
+      "type": "string"
+    },
+    "proof_of_delivery": {
+      "type": "string"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "canonical_shipment_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "command_id": {
+      "type": "string"
+    },
+    "external_shipment_id": {
+      "type": "string"
+    },
+    "domain_merchant_scope": {
+      "type": "string",
+      "description": "MER_\u2026 canonical merchant identity this booking command was created under; preserved across retries"
+    },
+    "domain_client_id": {
+      "type": "string",
+      "description": "Dedicated domain client this command was first sent as; preserved across retries"
+    },
+    "domain_signing_subject": {
+      "type": "string",
+      "description": "JWT subject (iss = sub) this command was first signed with; preserved across retries"
+    },
+    "cancel_command_id": {
+      "type": "string",
+      "description": "Cancellation command id, generated once and reused on every retry of the same cancellation"
+    },
+    "cancel_expected_version": {
+      "type": "number",
+      "description": "Canonical shipment version the cancellation was planned against; a moved version blocks the retry"
+    },
+    "cancel_correlation_id": {
+      "type": "string",
+      "description": "Cancellation correlation id, recorded once and reused on every retry of the same cancellation"
+    },
+    "cancel_reason": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Cancellation reason as first sent for this command; preserved across retries"
+    },
+    "cancel_requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "test_harness": {
+      "type": "boolean",
+      "default": false,
+      "description": "Server-controlled approved synthetic intake only; never customer flags or the disabled legacy platform harness."
+    },
+    "pickup_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivery_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "domain_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "in_network",
+        "delivered",
+        "cancelled",
+        "rejected",
+        "unknown"
+      ],
+      "default": "pending"
+    },
+    "render_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "etag": {
+      "type": "string"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "synced",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "sync_message": {
+      "type": "string"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "booking_command_claim": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "booking_command_state": {
+      "type": "string"
+    },
+    "cancel_command_claim": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "cancel_command_state": {
+      "type": "string"
+    },
+    "booking_intent": {
+      "type": "string"
+    },
+    "booking_ready": {
+      "type": "boolean"
+    },
+    "merchant_owner_user_id": {
+      "type": "string",
+      "description": "Server-written owner for service-role finalization; never caller controlled."
+    },
+    "server_owner_user_id": {
+      "type": "string"
+    },
+    "server_nonce": {
+      "type": "string"
+    },
+    "server_record_created_at": {
+      "type": "string"
+    },
+    "server_record_proof": {
+      "type": "string"
+    },
+    "archived_at": {
+      "type": "string"
+    },
+    "lifecycle_revision": {
+      "type": "number"
+    },
+    "lifecycle_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "server_artifact_ref": {
+      "type": "string"
+    },
+    "compliance_evidence": {
+      "type": "object"
+    },
+    "declaration_projection": {
+      "type": "object"
+    },
+    "custody_projection": {
+      "type": "object"
+    },
+    "custody_audit_projection": {
+      "type": "object"
+    },
+    "custody_receipt": {
+      "type": "object"
+    },
+    "created_notification_projection": {
+      "type": "object"
+    },
+    "custody_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "isolation_evidence": {
+      "type": "object"
+    },
+    "sandbox_isolated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Server-only synthetic fixture assertion; Render independently derives actual isolation from its merchant account."
+    }
+  },
+  "required": [
+    "origin_address",
+    "destination_address"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

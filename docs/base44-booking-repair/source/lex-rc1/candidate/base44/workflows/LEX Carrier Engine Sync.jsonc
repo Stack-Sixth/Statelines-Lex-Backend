@@ -1,0 +1,45 @@
+{
+  "description": "Registers every hub CommunityCarrier on the Render LEX engine so new/updated carriers become match-eligible automatically. Idempotent \u2014 skips carriers already on the engine.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "America/New_York",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "LEX Carrier Engine Sync",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_carrier_engine_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_carriers": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexSyncCarriers",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sync carriers to engine",
+            "description": "Register hub carriers on Render LEX"
+          }
+        }
+      }
+    ]
+  }
+}

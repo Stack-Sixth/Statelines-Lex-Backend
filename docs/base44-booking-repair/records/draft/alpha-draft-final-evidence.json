@@ -1,0 +1,23 @@
+{
+  "entity": "ShipmentDraft",
+  "owner_policy_fixture_deleted": "6ae732eab19092591ae66206",
+  "deleted_fixture_absent": true,
+  "server_fixture": {
+    "id": "6ae73af24e8fb3cd86a1bd09",
+    "merchant_id": "6ae36089acdf77499fbf16d5",
+    "owner_user_id": "6ae36074e14192b2f7f51dc7",
+    "archived": true,
+    "stored_edit_revision": 2,
+    "history_actions": [
+      "draft.created",
+      "draft.archived"
+    ],
+    "provenance_present": true,
+    "canonical_link_absent": true,
+    "booking_claim_absent": true
+  },
+  "remaining_intentional_records": 1,
+  "shipments_created": 0,
+  "quotes_created": 0,
+  "payments_called": 0
+}

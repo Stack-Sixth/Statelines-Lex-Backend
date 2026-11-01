@@ -1,0 +1,193 @@
+{
+  "name": "CrossAppPackage",
+  "type": "object",
+  "properties": {
+    "tracking_id": {
+      "type": "string",
+      "description": "Canonical shared tracking ID that travels with the package across every connected app (NOC, Merchant, Carrier)"
+    },
+    "merchant_name": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "package_size": {
+      "type": "string",
+      "enum": [
+        "small",
+        "medium",
+        "large",
+        "xl"
+      ],
+      "default": "small"
+    },
+    "weight_kg": {
+      "type": "number"
+    },
+    "weight_override_kg": {
+      "type": "number",
+      "description": "Manually entered real weight (kg) used for engine sync when the source app did not provide one. Takes precedence over weight_kg."
+    },
+    "weight_source": {
+      "type": "string",
+      "enum": [
+        "mapped",
+        "entered",
+        "missing",
+        "merchant"
+      ],
+      "description": "How the weight used for engine sync was derived: mapped from a source field, entered manually in the hub, or missing"
+    },
+    "service_level": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "express",
+        "same_day",
+        "overnight"
+      ],
+      "default": "standard"
+    },
+    "declared_value": {
+      "type": "number"
+    },
+    "current_stage": {
+      "type": "string",
+      "enum": [
+        "created",
+        "at_noc",
+        "at_merchant",
+        "with_carrier",
+        "in_transit",
+        "delivered",
+        "exception"
+      ],
+      "default": "created",
+      "description": "Where the package currently sits in the cross-app flow"
+    },
+    "current_app": {
+      "type": "string",
+      "enum": [
+        "lex",
+        "noc",
+        "merchant",
+        "carrier"
+      ],
+      "default": "lex",
+      "description": "Which app last reported custody of the package"
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "delivered",
+        "exception",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "last_event_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_app": {
+      "type": "string",
+      "description": "App that first created the package record"
+    },
+    "journey": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Ordered cross-app custody events: {app, stage, location, note, actor, occurred_at}"
+    },
+    "engine_shipment_id": {
+      "type": "string",
+      "description": "Render LEX engine shipment UUID once the package has been synced to the engine"
+    },
+    "engine_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Engine aggregate version returned at creation; used by later transition syncs"
+    },
+    "engine_command_id": {
+      "type": "string",
+      "description": "Forwarded command_id from the source app (NOC) for the engine create operation. Sent to Render as the idempotency key so retries dedup at the engine; preserved across hub replays. Never overwritten once the package is synced."
+    },
+    "synced_to_engine_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the package was last synced to the Render LEX engine"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "synced",
+        "needs_information",
+        "test_fixture",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Engine sync disposition: pending=awaiting sync, synced=registered with engine, needs_information=missing required fields, test_fixture=excluded test record, failed=engine rejected"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Confirmed test/QA fixture \u2014 excluded from operational engine sync but never deleted"
+    },
+    "lex_engine_claim": {
+      "type": "object"
+    },
+    "lex_engine_receipt": {
+      "type": "object"
+    },
+    "lex_engine_outbox": {
+      "type": "object"
+    },
+    "engine_sync_hold": {
+      "type": "string"
+    },
+    "lex_ingress": {
+      "type": "object"
+    },
+    "lex_ingress_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "tracking_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

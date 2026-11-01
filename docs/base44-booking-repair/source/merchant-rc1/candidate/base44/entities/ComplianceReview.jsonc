@@ -1,0 +1,122 @@
+{
+  "name": "ComplianceReview",
+  "type": "object",
+  "properties": {
+    "merchant_id": {
+      "type": "string"
+    },
+    "shipment_id": {
+      "type": "string"
+    },
+    "shipment_draft_id": {
+      "type": "string"
+    },
+    "item_category": {
+      "type": "string"
+    },
+    "contents_description": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "has_battery": {
+      "type": "boolean",
+      "default": false
+    },
+    "battery_details": {
+      "type": "string"
+    },
+    "compliance_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "additional_info_required",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending_review"
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": [
+        "permitted",
+        "restricted",
+        "prohibited",
+        "unknown"
+      ]
+    },
+    "validation_reason": {
+      "type": "string"
+    },
+    "reviewer_id": {
+      "type": "string"
+    },
+    "reviewer_note": {
+      "type": "string"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "declaration_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "server_owner_user_id": {
+      "type": "string"
+    },
+    "server_nonce": {
+      "type": "string"
+    },
+    "server_record_created_at": {
+      "type": "string"
+    },
+    "server_record_proof": {
+      "type": "string"
+    },
+    "approval_proof": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "item_category",
+    "contents_description"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

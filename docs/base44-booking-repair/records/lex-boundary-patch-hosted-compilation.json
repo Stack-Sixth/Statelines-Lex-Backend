@@ -1,0 +1,52 @@
+{
+  "temporary_copy": "/tmp/statelines-compile-ooxievtm",
+  "live_files_changed": false,
+  "deployed": false,
+  "baseline_drift": [
+    "base44/entities/AuditLog.jsonc",
+    "base44/entities/ChainOfCustodyEvent.jsonc",
+    "base44/entities/CommunityCarrier.jsonc",
+    "base44/entities/FraudAlert.jsonc",
+    "base44/entities/Incident.jsonc",
+    "base44/entities/OrchestrationTask.jsonc",
+    "base44/entities/PlatformConnection.jsonc",
+    "base44/entities/Shipment.jsonc",
+    "base44/entities/ShipmentLifecycleEvent.jsonc",
+    "base44/entities/SmartBundle.jsonc",
+    "base44/functions/lexApi/entry.ts",
+    "base44/functions/lexCarrierGateway/entry.ts",
+    "base44/functions/lexDetectFraud/entry.ts",
+    "base44/functions/lexIngestWebhook/entry.ts",
+    "base44/functions/lexLifecycle/entry.ts",
+    "base44/functions/lexOptimizeBundles/entry.ts",
+    "base44/functions/lexRecommendNode/entry.ts",
+    "base44/functions/lexSandboxBooking/entry.ts",
+    "base44/shared/lexIngest.ts",
+    "base44/shared/lexMerchantContext.ts",
+    "base44/shared/lexPackageMapping.ts",
+    "base44/shared/lexRenderAdapter.ts",
+    "base44/shared/lexSandbox.ts"
+  ],
+  "frontend_build": {
+    "exit_code": 0,
+    "log": "/tmp/statelines-compile-ooxievtm/frontend_build.log",
+    "diagnostic_count": 0,
+    "tail": [
+      "",
+      "> base44-app@0.0.0 build",
+      "> vite build",
+      "",
+      "Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:",
+      "  npx update-browserslist-db@latest",
+      "  Why you should do it regularly: https://github.com/browserslist/update-db#readme"
+    ],
+    "index_html": true,
+    "asset_files": 2
+  },
+  "frontend_typecheck": {
+    "exit_code": 2,
+    "log": "/tmp/statelines-compile-ooxievtm/frontend_typecheck.log",
+    "diagnostic_count": 314
+  },
+  "backend_compile": "separately verified by native Base44 compile-only functions; see hosted-backend-compilation.json"
+}

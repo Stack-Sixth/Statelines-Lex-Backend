@@ -1,0 +1,86 @@
+{
+  "name": "EventLog",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schema_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Envelope schema version"
+    },
+    "source": {
+      "type": "string",
+      "default": "statelines-lex"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the business event occurred (UTC ISO)"
+    },
+    "causation_id": {
+      "type": "string",
+      "description": "Command or preceding event that caused this event"
+    },
+    "aggregate_type": {
+      "type": "string",
+      "description": "e.g. shipment"
+    },
+    "aggregate_id": {
+      "type": "string"
+    },
+    "aggregate_version": {
+      "type": "number",
+      "description": "Aggregate version at the time of the event"
+    },
+    "isolation_hold": {
+      "type": "string"
+    },
+    "isolation_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lex_transition_ref": {
+      "type": "string"
+    },
+    "lex_queue_requests": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "event_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

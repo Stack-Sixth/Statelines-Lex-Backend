@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_engine_sync_sweep",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sweep_engine_sync": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexEngineSync",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sweep engine-sync queue",
+            "description": "Process queued/retrying engine_sync tasks: mirror hub transitions to the Render LEX engine in order, with the actual Render version, reconciling conflicts and retrying transient failures."
+          }
+        }
+      }
+    ]
+  },
+  "name": "LEX Engine Sync Sweep",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Hourly, process the durable engine_sync queue: mirror carrier-gateway, bulk auto-match, and admin shipment transitions to the Render LEX engine using service authentication. Processes per engine shipment in enqueue order, uses the actual Render version as expected_version, reconciles conflicts, retries transient failures with backoff, and surfaces permanent failures to admins. Scheduled invoke_backend_function runs as the app owner (admin), satisfying the function's admin auth check."
+}

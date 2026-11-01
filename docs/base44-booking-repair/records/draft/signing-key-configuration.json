@@ -1,0 +1,10 @@
+{
+  "name": "MERCHANT_RECORD_SIGNING_SECRET",
+  "created_privately": true,
+  "previously_present": false,
+  "existing_secrets_overwritten": false,
+  "value_printed": false,
+  "temporary_secret_file_removed": true,
+  "verification_note": "CLI emits names on stderr; combined name-list verified without repeating the setter",
+  "dedicated_service_client_credentials_issued": false
+}

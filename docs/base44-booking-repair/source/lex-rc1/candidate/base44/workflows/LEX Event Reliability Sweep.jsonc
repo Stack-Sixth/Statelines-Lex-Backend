@@ -1,0 +1,77 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "lex_event_reliability_sweep",
+      "version": "1.2",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_outbox": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexPublishToPlatforms",
+            "args": {
+              "mode": "sync"
+            }
+          },
+          "then": "run_retry",
+          "x-base44": {
+            "title": "Sync outbox",
+            "description": "Deliver undelivered outbox events to active subscribed platforms (checkpointed)"
+          }
+        }
+      },
+      {
+        "run_retry": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexEventReliability",
+            "args": {
+              "op": "retry"
+            }
+          },
+          "then": "sync_engine",
+          "x-base44": {
+            "title": "Run retry pass",
+            "description": "Bounded backoff retries + DLQ promotion at the attempt ceiling"
+          }
+        }
+      },
+      {
+        "sync_engine": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "lexEngineSync",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sweep engine-sync queue",
+            "description": "Mirror queued hub transitions to the Render LEX engine in order, with the actual Render version, reconciling conflicts and retrying transient failures."
+          }
+        }
+      }
+    ]
+  },
+  "name": "LEX Event Reliability Sweep",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/15 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Outbox sync + at-least-once retry every 15 minutes, plus a durable engine-sync sweep that mirrors carrier/bulk/admin shipment transitions to the Render LEX engine using service authentication. Recovery target: a failed delivery is first retried within ~15 minutes and reaches a terminal state (delivered or dead-lettered) within ~1 hour. Scheduled invoke_backend_function runs as the app owner (admin), satisfying the functions' admin auth check."
+}

@@ -1,0 +1,10 @@
+{
+  "version": "2026.11.01-cas-nullfix1",
+  "archive": "statelines-merchant-cas-null-followup.zip",
+  "sha256": "3951d8590e87e60068ca802f91de37c240855e1dbadeb189e7afd7486d7a7413",
+  "runtime_files": 4,
+  "tests_passed": 90,
+  "tests_failed": 0,
+  "patch_integrity": "passed",
+  "applied_to_live_operational_handlers": false
+}

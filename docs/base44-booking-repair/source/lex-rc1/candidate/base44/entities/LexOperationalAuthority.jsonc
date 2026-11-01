@@ -1,0 +1,70 @@
+{
+  "name": "LexOperationalAuthority",
+  "type": "object",
+  "properties": {
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "Shipment",
+        "CrossAppPackage",
+        "NonShipmentEvent",
+        "EngineTask",
+        "QueueTask"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ]
+    },
+    "proof": {
+      "type": "object"
+    },
+    "evidence_ref": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "revoked_by": {
+      "type": "string"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "record_type",
+    "record_id",
+    "status",
+    "proof"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

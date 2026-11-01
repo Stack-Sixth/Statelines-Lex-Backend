@@ -1,0 +1,14 @@
+{
+  "entity": "ControlledMerchantDraft",
+  "all_mutations": "admin-only; independent of merchant_id input",
+  "reader": "server-owner or trusted admin",
+  "function": "controlledMerchantDraft",
+  "native_compilation": "accepted",
+  "signing_key_name": "MERCHANT_CONTROLLED_RECORD_SIGNING_SECRET",
+  "key_value_printed": false,
+  "temporary_key_file_removed": true,
+  "cryptographic_domain": "merchant-controlled-record-v1",
+  "normal_production_writers_replaced": false,
+  "real_entity_acceptance": "pending",
+  "gates_changed": false
+}

@@ -1,0 +1,84 @@
+{
+  "name": "ShipperDeclaration",
+  "type": "object",
+  "properties": {
+    "merchant_id": {
+      "type": "string"
+    },
+    "shipment_id": {
+      "type": "string"
+    },
+    "shipment_draft_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "declaration_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contents_description": {
+      "type": "string"
+    },
+    "item_category": {
+      "type": "string"
+    },
+    "compliance_decision": {
+      "type": "string",
+      "enum": [
+        "permitted",
+        "restricted",
+        "prohibited",
+        "unknown"
+      ]
+    },
+    "compliance_review_id": {
+      "type": "string"
+    },
+    "reviewer_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "server_artifact_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "merchant_id",
+    "policy_version",
+    "contents_description"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

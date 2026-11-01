@@ -1,0 +1,103 @@
+{
+  "name": "SmartBundle",
+  "type": "object",
+  "properties": {
+    "bundle_id": {
+      "type": "string"
+    },
+    "shipment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "carrier_id": {
+      "type": "string"
+    },
+    "total_weight_kg": {
+      "type": "number"
+    },
+    "stops": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "optimized_route": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "forming",
+        "active",
+        "in_transit",
+        "completed"
+      ],
+      "default": "forming"
+    },
+    "estimated_savings_pct": {
+      "type": "number"
+    },
+    "carbon_savings_kg": {
+      "type": "number"
+    },
+    "grouping_basis": {
+      "type": "object",
+      "description": "What the bundle was grouped on: { corridor, service_level, package_size }"
+    },
+    "rules_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "OperationalRule names evaluated before forming this bundle"
+    },
+    "rules_checked": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Per-rule pass/fail: { rule, passed, detail }"
+    },
+    "carrier_capacity_kg": {
+      "type": "number",
+      "description": "Community carrier remaining weight capacity at formation time"
+    },
+    "max_weight_per_bundle_kg": {
+      "type": "number",
+      "description": "Weight ceiling applied to this bundle (rule or carrier capacity)"
+    },
+    "lex_transition_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "bundle_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

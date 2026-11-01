@@ -1,0 +1,55 @@
+{
+  "name": "StaffAccess",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Id of the app user this staff access tier applies to. One row per user_id."
+    },
+    "staff_level": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "dispatcher",
+        "analyst",
+        "viewer"
+      ],
+      "default": "viewer",
+      "description": "Authoritative LEX staff access tier. Admin-level here does NOT grant platform admin \u2014 only the platform role grants that. This entity is admin-write-only, so users cannot self-escalate."
+    },
+    "set_by": {
+      "type": "string",
+      "description": "User id of the admin who last set this level"
+    },
+    "set_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "staff_level"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

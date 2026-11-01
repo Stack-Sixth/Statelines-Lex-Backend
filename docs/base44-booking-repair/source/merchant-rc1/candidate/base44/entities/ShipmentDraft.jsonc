@@ -1,0 +1,119 @@
+{
+  "name": "ShipmentDraft",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The account that owns this unfinished shipment"
+    },
+    "merchant_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "booked"
+      ],
+      "default": "draft"
+    },
+    "step": {
+      "type": "number",
+      "default": 0,
+      "description": "Index of the step the merchant stopped at"
+    },
+    "data": {
+      "type": "object",
+      "description": "Shipment details entered so far: sender, recipient, addresses, parcel, service and delivery choices"
+    },
+    "options": {
+      "type": "object",
+      "description": "Promo code and rewards choices made for this shipment"
+    },
+    "compliance_result": {
+      "type": "object",
+      "description": "Last compliance decision recorded for the declared contents"
+    },
+    "declaration_checked": {
+      "type": "boolean",
+      "default": false
+    },
+    "shipment_id": {
+      "type": "string",
+      "description": "Set once the draft has been booked as a real shipment"
+    },
+    "route_label": {
+      "type": "string"
+    },
+    "last_saved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "booking_claim": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "booking_state": {
+      "type": "string"
+    },
+    "booking_shipment_id": {
+      "type": "string"
+    },
+    "edit_revision": {
+      "type": "number"
+    },
+    "archived_at": {
+      "type": "string"
+    },
+    "lifecycle_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "server_owner_user_id": {
+      "type": "string"
+    },
+    "server_nonce": {
+      "type": "string"
+    },
+    "server_record_created_at": {
+      "type": "string"
+    },
+    "server_record_proof": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

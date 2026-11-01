@@ -1,0 +1,906 @@
+{
+  "scope": "selected app repair source, tests, docs and sanitized evidence only",
+  "exclusions": [
+    "raw full source exports",
+    "original private attachments",
+    "baseline folders",
+    "backups",
+    "credentials and environment files",
+    "CLI auth/config stores",
+    "raw API app documents",
+    "raw logs",
+    "generated browser SDK bundles and probe pages",
+    "node_modules",
+    "archive binaries"
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "ae895a585a03989e76637f6f5b2c271dcbf08c3d8b3384fd2a9ac1620f2799a1"
+    },
+    {
+      "path": "records/RELEASE-CHECKSUMS.json",
+      "sha256": "4910b1f33cf5aa8cc1668d805065322b94796a71762e5575c8c34501a6a7f3f3"
+    },
+    {
+      "path": "records/backend-ci-evidence.json",
+      "sha256": "7299052459049a5e7d116b0717de82f2a6a994acf8788bcafe3f5beafac5dc1f"
+    },
+    {
+      "path": "records/draft/ControlledMerchantDraft.jsonc",
+      "sha256": "42969a97760ed3885d1f1636f2617f6872ff09306fe5502a8d47a19c9ecd3005"
+    },
+    {
+      "path": "records/draft/ShipmentDraft.after.json",
+      "sha256": "a326a57c93bcf9576e3ad5d9749b8d670258b55449992f0ba8119bc5fa09f102"
+    },
+    {
+      "path": "records/draft/ShipmentDraft.before.json",
+      "sha256": "aad2ceef459f6be69dd8f0569a0be5bf7c697f8669077ae01511c7158ae39489"
+    },
+    {
+      "path": "records/draft/actual-draft-after-policy.json",
+      "sha256": "84225126aa306f317608fa1d8de169a598e9ca1c3af06428c73ae5004ae6c969"
+    },
+    {
+      "path": "records/draft/alpha-draft-final-evidence.json",
+      "sha256": "9ca0e4e44720116391296b3484e4e6c2022b7284fc23b41fea36ecbb0f434ed1"
+    },
+    {
+      "path": "records/draft/controlled-draft-admin-denial.json",
+      "sha256": "dcd1d5c1207298140dfffebdc0b0f010d4f30e6226ae4d14ac80764650292b92"
+    },
+    {
+      "path": "records/draft/policy-application.json",
+      "sha256": "1b25aa74aed4e8f201cceaa0aad6c3a6ab1bd03ba7f0f47d34e80a1fffd4af09"
+    },
+    {
+      "path": "records/draft/private-store-application.json",
+      "sha256": "4cfcd963792544a43c141c2cbc447fb57aae2298b2ea4b952517adf56b22ddf7"
+    },
+    {
+      "path": "records/draft/run.json",
+      "sha256": "a42125de63d487cb467ecb909cc12a14805d0b0ad362a44e744f0c9c2ce8c410"
+    },
+    {
+      "path": "records/draft/signing-key-configuration.json",
+      "sha256": "6a373a5ac7c2bf1e888e8a9c0619aa9c1ddfb9966ca954ef3010e35b5313f182"
+    },
+    {
+      "path": "records/draft/test-slice-guard.mjs",
+      "sha256": "8ca8778403a8f1dd0efb59313a6c39afbf4fdbe5f25a641faf3364193e321361"
+    },
+    {
+      "path": "records/hosted-backend-compilation.json",
+      "sha256": "665c3edf1193d2a653f1da3e9fcfde000dd16452edd348b45725f238604699ef"
+    },
+    {
+      "path": "records/lex-boundary-patch-hosted-compilation.json",
+      "sha256": "5f14d80f68f3bd62e4b1bf63ef449ed44901436731804c46ba5eaef132684cfe"
+    },
+    {
+      "path": "records/live-endpoint-checks.json",
+      "sha256": "115b753f353b159848b2042e36ded9afacff2d015b1e5d710349deec83c7f26d"
+    },
+    {
+      "path": "records/merchant-controlled-test-patch-hosted-compilation.json",
+      "sha256": "d29ceb1af7f32d2bd08e24d5f979ddb8131156a24bb686b247cd0a6ab62c15d7"
+    },
+    {
+      "path": "records/nullfix-package.json",
+      "sha256": "5a74ef0376d2e06cf1b80f6c33e650df02b35b0f730c75dad88d5d74299e9d49"
+    },
+    {
+      "path": "records/provisioning-manifest.json",
+      "sha256": "7aa0b77ef848097d09c06fc0530dd273c6d1417458e6461f8622b0f234cea5e8"
+    },
+    {
+      "path": "records/render-and-migrations.json",
+      "sha256": "a894c66ab862ec9f56a36cbb9089760f1d20ba3a74ad1a5352d7b8efa162b929"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/entities/ControlledMerchantDraft.jsonc",
+      "sha256": "42969a97760ed3885d1f1636f2617f6872ff09306fe5502a8d47a19c9ecd3005"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/functions/controlledMerchantDraft/entry.ts",
+      "sha256": "675535ceb4a0442791523ca1fd5011de88a68f0fde5f5566cc27570f21d5a207"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/shared/statelinesControlledDraft20261101/functions/merchantDraft/entry.ts",
+      "sha256": "0fba41931d478e5987f5a6091b916068a299de26917f3cbd45d780d38e6c3211"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/shared/statelinesControlledDraft20261101/shared/bookingMerchant.ts",
+      "sha256": "50fc828d544c4a74d3533ce2a0a6822609da4d4323c197974447a823de687e5a"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/shared/statelinesControlledDraft20261101/shared/casBooking.ts",
+      "sha256": "0c5311508a9aad11544af82025a97557943063eb9badce2608ff3b9a2381feba"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/shared/statelinesControlledDraft20261101/shared/customerShipment.ts",
+      "sha256": "5cf9325e2854b23eebe9db514babcc8925fb0e49685c6bdb935c9d9d04a2104b"
+    },
+    {
+      "path": "source/controlled-draft-slice/base44/shared/statelinesControlledDraft20261101/shared/serverRecord.ts",
+      "sha256": "31dc81f3e97e34b6a7c7230798d57833c02746f1605b4e1442615e4eb06a0d5e"
+    },
+    {
+      "path": "source/controlled-draft-slice/manifest.json",
+      "sha256": "46173188a8775138d0d8393f17c732b81b15d36d21bec4add0655ef41bf01dca"
+    },
+    {
+      "path": "source/lex-rc1/HOSTED-ACCEPTANCE.md",
+      "sha256": "27ce7d36478b122f28f1217148f38006d97b843f93b4fc5b8c2e62b3fc3c618f"
+    },
+    {
+      "path": "source/lex-rc1/MISSING-DEPENDENCIES.md",
+      "sha256": "8e02e32bc65c6e0420fbe78866600415ecbfc5a9a20858b4b2fffb2b49d20f28"
+    },
+    {
+      "path": "source/lex-rc1/README.md",
+      "sha256": "afdcc7f382c898de6bc634f4e9ab47f08266199a2867fe9846844bda11fb5857"
+    },
+    {
+      "path": "source/lex-rc1/WRITER-INVENTORY.md",
+      "sha256": "dbfe40fba95b76bf44e0d0ccaa86f480ff018c37f11edd9a61ca42f34d799647"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/AuditLog.jsonc",
+      "sha256": "3a099cb5f25795cb6445d08cca7fc85b105dd4799245cef0e844d5f722784b4d"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/ChainOfCustodyEvent.jsonc",
+      "sha256": "eb15ea1ecd11cd7bbfbb19cdfa2b3d8026e2faceb504235b4388ceaf0c07263c"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/CommunityCarrier.jsonc",
+      "sha256": "c1aa29f3d05bddce94a4694d0aa7d453140c500e3b8a863d40c2178fa13a6246"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/CrossAppActivity.jsonc",
+      "sha256": "8f05a3cabbdcb27c6afcf93c584ef7f16014166623d5db89c535758729573a5b"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/CrossAppPackage.jsonc",
+      "sha256": "f4867bb1a62252037774718c0ca12d8a50e28457e10cadbcd26f51aa5afc80df"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/DeadLetterEvent.jsonc",
+      "sha256": "2f3daa96fe3ec3e91579794f432ee1484c46977a832db94eff8ce91ebbf03a5c"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/EventLog.jsonc",
+      "sha256": "3bfe80992a7ba56922a212443c3871d9efa4d4bf19bc7b25d1f89dddcdf3b6f9"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/FraudAlert.jsonc",
+      "sha256": "8ad4c7a51f03ef04622bac9cd839a3724bdfa8e5ac53de03564290951d841b5d"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/Incident.jsonc",
+      "sha256": "3824f03971a6d00b3b4c07593bc9832f1814419cea9b469f823792f93c192d9f"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/LexIngressBinding.jsonc",
+      "sha256": "a4015aff8ac29333b415e7690cc213a166e15024771e41162e75c8f3d5fd34b2"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/LexOperationalAuthority.jsonc",
+      "sha256": "c1ac7b4a63c0d08eedb6f792bd7eb0ddeb2219e087d3447e2177f26240fb3e99"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/Notification.jsonc",
+      "sha256": "e9380cec9e9e40b52c651ad3fb0680da17a89bd631c823bb6f270d038744d8bd"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/OrchestrationTask.jsonc",
+      "sha256": "d9fd1cca24c636463472fd0237d2ebd4c4d287fbb20f31cad2547243dce5e5dc"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/PlatformConnection.jsonc",
+      "sha256": "18020d3b897a546ac7cf0bbe976631cd84e0e11d83c79db555580630abad9dea"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/PlatformDelivery.jsonc",
+      "sha256": "edd4358bf2db6453829d9a151b2d740b7a1268e572f730de173c44aae251b715"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/Shipment.jsonc",
+      "sha256": "704c1b5eed2434ad94d084ed93fe09818a7b25bd2126c2c2a1069da6adbfecf1"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/ShipmentLifecycleEvent.jsonc",
+      "sha256": "80ef74f80653f4984f5ee7a2d674616078eb0d51dcaf1078b5fff50b4e1c0fae"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/SmartBundle.jsonc",
+      "sha256": "09230630256e55c139445229e3ea4da37f64c6c5159fe95a780fb62cdfaa73ae"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/entities/StaffAccess.jsonc",
+      "sha256": "c597a8902a4faf8c8e8238cb3353c7eea4ae37a1cb257b41d106c707e31cac38"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexApi/entry.ts",
+      "sha256": "cc1d912906f5de533dc57e739199f6e108157638c3846d3f106dfdfa0d407231"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexApproveOperationalAuthority/entry.ts",
+      "sha256": "671371f192267bd578fcf725d65a1a04b072342f5fe5a1763f6bd17f10771796"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexCarrierGateway/entry.ts",
+      "sha256": "fe69915bbfdcc47c1de536007c6c2b24f421901522f4c689658a9212c19e4e33"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexDetectFraud/entry.ts",
+      "sha256": "97b785975c395998fd6aa13a8ee33e2436796b1d98768a10a7e07703295e1c1d"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexEngineCleanup/entry.ts",
+      "sha256": "3db8720762102ff191a35dbcb163432c78f41482af7cb7b9d29ffb223cddaeab"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexEngineSync/entry.ts",
+      "sha256": "8b6dd8932b00d81a02d83bc53702e633cebfa01c5be8ce152df6d9035cdd31dc"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexEventReliability/entry.ts",
+      "sha256": "77e0dc910cad56b55ae4e9e5534195e5b6e2dd381c63a9756b55a9bddd8d599d"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexIngestWebhook/entry.ts",
+      "sha256": "312c5942c22b979b2c5bdbf1049b71c58d625e8c2173db89c58b255856d00de3"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexIngressControl/entry.ts",
+      "sha256": "396e7bd40fcfc7a5f9d7eb40652d42562c3492e9d2de812c0fc2d20fc6516746"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexLifecycle/entry.ts",
+      "sha256": "552b48228a925e33afd71749d1864fb381e856e833675c4410fb92eec8d19ada"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexMatchShipments/entry.ts",
+      "sha256": "879369be3fab367980fb6329a977e05584da92fb4a7cb2932eb1b8295cf72944"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexOptimizeBundles/entry.ts",
+      "sha256": "46cec2d3d98867c3c947885c45ccbbae6c66fdb17a561031f476dbc47b10263f"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexPublishToPlatforms/entry.ts",
+      "sha256": "cc23f3553f434325b9af3abcb768e668e200af55aba5b4afc9872de3e696eba7"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexQueue/entry.ts",
+      "sha256": "d16398a96fd09054340cff36daab308147f3ea9928d4fb158c3b5b696e219048"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexQueueControl/entry.ts",
+      "sha256": "e3ac2dd9a8f2ae6a7222fef65da942fba5dcdfeb4870168ef4895103a5a0628f"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexRecommendNode/entry.ts",
+      "sha256": "4178fb254a31d95f4759d6d6bbb33d5ad9f12ab9c42da55fc99b85124ed6fb57"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexRecordCustodyEvent/entry.ts",
+      "sha256": "8ee8d74e26c2105a850c2d33027268e5a4229d2345cfaedec9e23ead6efee1f2"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexRecoverTransitions/entry.ts",
+      "sha256": "b3ac593180a0b207ee24b1870b4a52ad7494b3412e30213360a7d2d102df30b4"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexSandboxBooking/entry.ts",
+      "sha256": "261c1ce5a0990758f7b9c031fb4c4e69683bd29032dc7536331e59e0626ff528"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexSyncApp/entry.ts",
+      "sha256": "77e1365b980576d9a0a4c8f1a7a80643276a0364be36a45b982fd1ca8228b927"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexSyncCarriers/entry.ts",
+      "sha256": "385c610f05b50c40eb22678cd44824be76cbbad824975b4f9f62eeecb2cee134"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/functions/lexSyncEngine/entry.ts",
+      "sha256": "ccbd1a8bd74346ce813de51e9b5dcb7f56f5b23f1d731922ea855b9a0ca7caa3"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexAuthorityBinding.ts",
+      "sha256": "6dbf20f14905dcec568eeee62eeee6166526faaa78837aa34b905bcc6866514f"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexBridge.ts",
+      "sha256": "a5af3d5084946259677ef0a3b7571729271e638b77d726796f12e3ca9e0203ec"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexBundleRecovery.ts",
+      "sha256": "50e251bbba8f6511c75eb0b97771e808965565e8162e9137478282c53a1b9f39"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexEffectProof.ts",
+      "sha256": "739059fea3884dabe5ec49c7210cd57d93aac812965f3affc593f468d9e62451"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexEngineBoundary.ts",
+      "sha256": "a87aae81e161155a34833012255708731a3bbeedd1e63dc5b692eb88d324fcb2"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexEngineCreateRecovery.ts",
+      "sha256": "4e3ee48dc670958d1932950f8d6b4a88f4cb01ffd4b6a5fb91891c06b8eb8687"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexEventIsolation.ts",
+      "sha256": "801a5286a2688edff57a8ec13601d81d8c2143b580800b5bced268787384f9a6"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexIngest.ts",
+      "sha256": "7351e28237b4841367f9b3908b3bbb496e9acfb2ac5fad07fc7163199672edd2"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexIngressAuthority.ts",
+      "sha256": "f565faf51c385ad45ec10483307792b8eb2e82e7df401b5bedf80b6a2095a3fd"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexInternalGate.ts",
+      "sha256": "550a5bc7f5fc1d583bee525580431dc26d5a1073cde382d4c5535dca640b92e0"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexMerchantContext.ts",
+      "sha256": "d7fff5e51440a0aa3dd90210031471a8b6ed036ea3a92d32bedd32d4ac2b88b8"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexOperationalAuthority.ts",
+      "sha256": "2bc02bd67a1589ea748607daa766411bc7ff54a8f67d719c6dd704f905420191"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexPackageMapping.ts",
+      "sha256": "d8d9bf89c8826c643b98446fdd014573c8076955f8d5a29167bcdbde55e179d9"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexPermissions.ts",
+      "sha256": "7192803ec4747d41142786a472341589975aa40aa09970d659364657e862fd9e"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexPullProtocol.ts",
+      "sha256": "5c6cd1234e9d137f79856eb30225068a41d575898ca71caecef8bd893a24b900"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexQueueSubmission.ts",
+      "sha256": "7b2ba719c663e151c5d55fe6bcff5757a4a5e56e299ae2046f3ea2da094df8aa"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexRenderAdapter.ts",
+      "sha256": "7d1c079bd829068f9e2bc423fac1896e9b1b2e07abadc5b7be496a2951b3f46f"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexRenderJwt.ts",
+      "sha256": "23c0dd82b1d398c6e42ecca429e7cd9b2c919b08c8bda0ebb739d2abbca99602"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexSandbox.ts",
+      "sha256": "2efeac7ab565b9fc5023381ae7d9ded022be40f5e602b8aaf5fd80113c00e29e"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexTaskAuthority.ts",
+      "sha256": "6beb22747dda997561643393793cec8a9905c7445cd39902fc4b00dcb11ca7bb"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexTransitionRecovery.ts",
+      "sha256": "fe88475c9f4669436d1fff6f6c96f1456504718f62a6bf794e2c4b26f92e0e97"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexTransitions.ts",
+      "sha256": "947e068a1bd9d137c417fe6cb96100be4215ed1441c74f5b5317c718e2a9eaad"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexTrustedIsolation.ts",
+      "sha256": "63223739e1fb5e9513c1c2f79b11348ad602e40af66f562b95597fa3b32de8a9"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/shared/lexUtils.ts",
+      "sha256": "6c0c9be73da4a64832b57ef9674f2285ae009ae8827a4a66c9ce9e82d3a78534"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/workflows/LEX Carrier Engine Sync.jsonc",
+      "sha256": "3b304810be048ae6efc7b494491bd12f05f2fa9f4970e8b91abd5990b5249041"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/workflows/LEX Engine Sync Sweep.jsonc",
+      "sha256": "2c97b409a75131a8a67ee6f17cb5a85c720c67ec80383d3c45c2f4ccf8e17a00"
+    },
+    {
+      "path": "source/lex-rc1/candidate/base44/workflows/LEX Event Reliability Sweep.jsonc",
+      "sha256": "e0c6038fdb63faf8d0f6eeaa9364a89eff8727673195d787fbeaef13ea95ad88"
+    },
+    {
+      "path": "source/lex-rc1/candidate/src/components/lex2/QueuePanel.jsx",
+      "sha256": "7d4e75fc387540e28c1fa9fae8ed2a0ea170cf53634dda48248f51811b0404cc"
+    },
+    {
+      "path": "source/lex-rc1/candidate/src/components/lex2/lexQueueClient.js",
+      "sha256": "8bb6e91d8b38ddbc1a02cabd01e46eef40362b25a9dad71fcb40b3d6f5773796"
+    },
+    {
+      "path": "source/lex-rc1/manifest.json",
+      "sha256": "3d8fd3a807cbede1320af3732c5a5559d0fd79a9103fa3d217eadb3f9fe47e23"
+    },
+    {
+      "path": "source/lex-rc1/tests/boundaries.test.ts",
+      "sha256": "6c08022512e0000b1526aec63d885dab21404124922ea359837d55e153685c3a"
+    },
+    {
+      "path": "source/lex-rc1/tests/lex.test.ts",
+      "sha256": "4a61d26e65726bae75ab90a8dda0cf10b5a6954e61e891eaa0d5e40d479ecc28"
+    },
+    {
+      "path": "source/lex-rc1/tests/missing-dependencies.test.ts",
+      "sha256": "8a55e691541c7e80e3bbb7676caed6172ce3e7e4d2280d9f66b01f3b73e39881"
+    },
+    {
+      "path": "source/merchant-null-fix/README.md",
+      "sha256": "fb747e8ca747049b6d933747f602f815aac9e2f5b2672fbe94ee2e24c8778447"
+    },
+    {
+      "path": "source/merchant-null-fix/candidate/base44/functions/cancelOrderOnDomain/entry.ts",
+      "sha256": "1052baeb2e610458c556718bb9816516e670a685f6aa3882324f4eefbd804a2c"
+    },
+    {
+      "path": "source/merchant-null-fix/candidate/base44/functions/createOrderOnRender/entry.ts",
+      "sha256": "a758c6c2165367f001b3d5a168815b4305d2302f45a067990699e9c137d64ed0"
+    },
+    {
+      "path": "source/merchant-null-fix/candidate/base44/functions/merchantDraft/entry.ts",
+      "sha256": "d04f797adeec969cb0c7781192ebb315917dcd0f43c282873204c38d0cb5d2dd"
+    },
+    {
+      "path": "source/merchant-null-fix/candidate/base44/shared/casBooking.ts",
+      "sha256": "0c5311508a9aad11544af82025a97557943063eb9badce2608ff3b9a2381feba"
+    },
+    {
+      "path": "source/merchant-null-fix/manifest.json",
+      "sha256": "ca13e9b6cd60b7d79ee3de847db7d21220304e5890f270de11ec37c585b9af5b"
+    },
+    {
+      "path": "source/merchant-null-fix/tests/base44-storage.contract.ts",
+      "sha256": "4c29e576494b1533197525977165bf9833417397b7ffd8751847b8870383ed7f"
+    },
+    {
+      "path": "source/merchant-null-fix/tests/handlers.test.ts",
+      "sha256": "6886164ac85cb03d5936daad68c35fa002530bed9c060cdabda0892dd2e499d3"
+    },
+    {
+      "path": "source/merchant-null-fix/tests/storage-probe.test.ts",
+      "sha256": "0d748e99e74847722282b52086a89a9b709d35e3bb970b7640814b98d116453a"
+    },
+    {
+      "path": "source/merchant-rc1/HOSTED-ACCEPTANCE.md",
+      "sha256": "96dc46c645490770b69cf9f41fccd3bca0c3419f8a6524ca68123bec65cdad12"
+    },
+    {
+      "path": "source/merchant-rc1/INTEGRATION-CONTRACT.md",
+      "sha256": "76d0f84b540e8ba1880164a5815380b85b5fb16ce297a16a21f66964d4c625a7"
+    },
+    {
+      "path": "source/merchant-rc1/README.md",
+      "sha256": "69cd47da464e0511f410815d6011e71f831b606833624d89505a9413f8d7ce08"
+    },
+    {
+      "path": "source/merchant-rc1/WRITER-INVENTORY.md",
+      "sha256": "ca2be7ebad7be168e32834168b2c011340de702199a2b345bc1728ae9f479275"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/AuditLog.jsonc",
+      "sha256": "1ca52a95e977fd5afb19c1d8018bdc393fea8a2c10bb19fdafec1ef2fde0707f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/ComplianceReview.jsonc",
+      "sha256": "49a819fdd99ef58cee1269ffc9c94cfbebd637cde017fb6e8e1a64bdd9170693"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/LegacyShipmentAuthority.jsonc",
+      "sha256": "938f4cab7b35edb728db9ea2b02877c72881b556cff76a005828459a6b45eaab"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/LexPullPeer.jsonc",
+      "sha256": "a2dff6194525fd749661c23394ae8eb9e9a77fffcd45a60f2db53e62c9db3760"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/Notification.jsonc",
+      "sha256": "1c195fafe21e6e096f6dcc26df2ce773cc1c82dd1477e50786a0a224f9c1c6fe"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/Shipment.jsonc",
+      "sha256": "6ec5bb7c42493ff2c91571fdb79c1332678df8e3b480161c3e56e6eb5fb2d77b"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/ShipmentDraft.jsonc",
+      "sha256": "762cf64886fd5fa7555459141b6ca3155ff48e3314d4b65ca8534f85fba4397a"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/ShipmentEvent.jsonc",
+      "sha256": "3abd4c78785f64fb81ed6de4fa940015b9423a3384436c2cd05317866bd2071e"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/ShipmentQuote.jsonc",
+      "sha256": "a3390770443aa8c76d5e3c9d3eabba6f561c55bae6b7bb4e1cd5c594186506bd"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/entities/ShipperDeclaration.jsonc",
+      "sha256": "d436de0acccd559c1933e368ef041b23750114c3daa20029f21415565a76b8d6"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/archiveMerchantShipment/entry.ts",
+      "sha256": "6a7a95c6e2b6b8a0e59f08a5f3fa8c751d649b7e6c4757641d8fc810d7f4efb9"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/awardShipmentRewards/entry.ts",
+      "sha256": "b66c77939ce7f92bddd86e269e18f95dc376bd3d87c956e54b7a3164a43b9b8a"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/cancelOrderGate/entry.ts",
+      "sha256": "49626668ddcedd0eb61e0a8b2b79233d60f46889b0ddc7c46aa64a242bdc8df1"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/cancelOrderOnDomain/entry.ts",
+      "sha256": "7f7aa2d02f356fddc7ef3c6fe0f1230d77f2282840eaafdf8fe7128ce746b34f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/createCardSetupSession/entry.ts",
+      "sha256": "fbdee6681b0d485ac84ea306a0795d19e577d27e0c28669f6522a834e63cb0af"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/createControlledTestShipment/entry.ts",
+      "sha256": "50f9168090c3bea39edde10908fc55a84fb25ae20689639699a9d22705e8f6a7"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/createOrderOnRender/entry.ts",
+      "sha256": "66b59d75aeabf088c64bd17d7fb348e370ac6fb7d21e239c7cce22f921316991"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/createTestShipment/entry.ts",
+      "sha256": "a6043757748b165b501e8b0149a39dcd6acd08fa468a43d0545fddf5a9f8daa7"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/deleteMyAccount/entry.ts",
+      "sha256": "48a589dcc3e7534ec3d4c1c42607de396ab95510f6eca83cef7c25215f3b57e5"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/dispatchPlatformEvent/entry.ts",
+      "sha256": "b86961e17b3d4f523641c697ec329ff976ac6107cced7bfaca8438a004d3babf"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/finalizeShipment/entry.ts",
+      "sha256": "c66b08124cfd28c30768145f10e62e27b0b20056fe2c68fcc6e498f1e308308d"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/lexPushToHub/entry.ts",
+      "sha256": "d2799dd06b5c236c8978cda8957f89043755822abcfff0c00604009d19316487"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/lexSyncEndpoint/entry.ts",
+      "sha256": "cd25687dc7ad74fe20bd1bd114ab32af705e7d16bd93d4e87386b6ffd79347f6"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/lexWebhookReceiver/entry.ts",
+      "sha256": "d43a028126f9e0113f2efd0913f129a5a7b83d67d4b88276883584e09b34636c"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/listPaymentMethods/entry.ts",
+      "sha256": "f1e03fea570e2d40ca3eaee63aae2c1b4eb5e5160065a1ccdab46400252edb0f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/merchantDraft/entry.ts",
+      "sha256": "4620729c0a668fb4ea8cf21b3d462b805384451bb850de60e57e38671b19c1b5"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/merchantShipmentRead/entry.ts",
+      "sha256": "6924096a793602aacd164643120123870a4afe1b3cfb262a08ffa60c86eac21d"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/notifyShipmentStatus/entry.ts",
+      "sha256": "4f864123c3ba417c91ae8f5cf7d51e71a39060b2c225950246b5f5bfbda98be4"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/partnerCustody/entry.ts",
+      "sha256": "6011fa02034301143e9176558f05db263fd22147a9198e251224c5b5df4605ab"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/prepareTestShipment/entry.ts",
+      "sha256": "681e6b025f21e06d3054df9fd2e27086f0b333ca7bf466eec58a31aae0ab4490"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/pudoShipmentSync/entry.ts",
+      "sha256": "1e5dcf9f80eada6b3b2dec512545e39b27cfe5c0992f5be247bc556682f365a4"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/requestLiveRate/entry.ts",
+      "sha256": "1ec1a03f0963bcb1a1f7ed27c314005f34b2d885c1fd05f9cf83ca1a84fb4f8e"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/retryPlatformEvents/entry.ts",
+      "sha256": "7316555eeb916578005735061145e6823ea5660d86f5720f257908101001cd4f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/reviewLegacyShipment/entry.ts",
+      "sha256": "41919fd1a5783aeb51d7486a852b6ed3084ea505dc9d80d969b7c5e7e9e62cc7"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/stripeWebhook/entry.ts",
+      "sha256": "637546d180cad7b66dd6a9e55301536f370193185892a14ba8da5f0dec8dffb2"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/validateShipmentCompliance/entry.ts",
+      "sha256": "6c366d9e112d53d7512df1574d0de9310010a4dee142d911efb97e7dc9d80913"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/walletDeposit/entry.ts",
+      "sha256": "fb9f7c71c10de466a1ae724a2b771d35c1ceb630267dec944cf1d4a0aba3dc18"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/functions/walletWithdraw/entry.ts",
+      "sha256": "1ef3d0bbf78fcbb2a0902b2e4453ba789a205085335c425bdd808845bf0a2a11"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/artifactProjection.ts",
+      "sha256": "e9cb851b35353af8e9411bfa4399906837bb950f5736755d73b9f5c571cc3e76"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/authorityRules.ts",
+      "sha256": "38f09f0a7676ddf424fbf60166a2a485e2dbf7614a85b3585416a55848a5e0b1",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/bookingException.ts",
+      "sha256": "a4e43bdf5840306f238054dca0f5f6883f87e3bdaf9164fa40e1d5099b52ef3c"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/bookingExceptionRuntime.ts",
+      "sha256": "b6123e292a310948db7ba6bd50c75722061923911b71bc3294addf72639114c9",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/bookingMerchant.ts",
+      "sha256": "50fc828d544c4a74d3533ce2a0a6822609da4d4323c197974447a823de687e5a"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/canonicalRead.ts",
+      "sha256": "8a7dd3784c464f0b9990966cd6d0ae39ae49d12d9da75ea0d35dc46efa5d148e"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/casBooking.ts",
+      "sha256": "1c8a6ab589de0ed7a67266c12fa02b892f833ee692c3175bcd7cdeeaab1700e7"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/complianceBooking.ts",
+      "sha256": "e8e899a1029528a4fbaf25d8d7e59ef33a39c33c13f33585b24e02de098aecd4"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/containmentResolver.ts",
+      "sha256": "12b6607822c9ae2dda723e5271348aeaacef84fc469f779b4efe25d004621911"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/custodyRecovery.ts",
+      "sha256": "99d52b9ca5b9f33a17ad80611396d3811d2e87ac1feb7e55c69f629cdbcf1de6"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/custodyRules.ts",
+      "sha256": "47af1e0a62bb507caaf4bb6d56d4be82fe1bc987ae7481b48fa895de9145e2ce",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/customerShipment.ts",
+      "sha256": "5cf9325e2854b23eebe9db514babcc8925fb0e49685c6bdb935c9d9d04a2104b"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/declarationProjection.ts",
+      "sha256": "7e02c879a66873a419b4190d941085039e1d6644f64f05551ac114dfcfdb56e4"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/domainIds.ts",
+      "sha256": "46b270431d4c749a9f701f50c8560661bdd1551293c8b1561de08b6d4c6d4343"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/domainMerchant.ts",
+      "sha256": "8689cb20681ba3575fce5902e1f1da8e88d8bd9d359f342f24f3b10b20cba3d5",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/legacyReview.ts",
+      "sha256": "7be2072719f0a9a828c7cfbb981aa5d230276c0492be1baeadda7262a278f639"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/lexPullProtocol.ts",
+      "sha256": "d704b3c3364066ff78f566d21747d3ad9cfb0e7019059a0f866f979bfbab5c41"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/partnerPromotion.ts",
+      "sha256": "f3f54ecaa1957e257f58d0baec84fe31e62ed0fc5d56b75f95145a1176d66c94",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/paymentMode.ts",
+      "sha256": "e760fb17e8221046825c21f26d7df77c6ab4dcd42c172a1131ce99c41a79f3de",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/platformDispatch.ts",
+      "sha256": "e922c635fb41ad0c1ec7567aa2729a1bd4ab16cac931891af25df9ef71768a25",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/platformSync.ts",
+      "sha256": "cf21cdef661acf4932b344f3eecea27b0e1083b4cf00a4ca0b391373418789ce"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/portalMemberships.ts",
+      "sha256": "409eaaa0f85611dc330e1f612438b537a838ba5aa0e24ea61476dfe26abfa69a",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/rateLimit.ts",
+      "sha256": "03105b8e6890fe4be53fc03a5a19225e94f5180ee0d6fae7aff7c0a2695834e9",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/rateQuote.ts",
+      "sha256": "5c3f12c953dc97a310a796f8b15a992608732a7f17fa8be16aab90ee63827452",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/renderClient.ts",
+      "sha256": "7f09f8b10137dfb6f9bbe2af91ac4237337fa6ae881f44369a9c646f7645fd16",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/serverRecord.ts",
+      "sha256": "682c4e057d80b3a3ed2872baa95383dcd2c212198de1623d2cb2c8a10d3639ba"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/shipmentAuthority.ts",
+      "sha256": "5d566670d4544e8ee2f529ebf01dd8b330872289f934efb993947c9d9986d872"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/shippingPolicy.ts",
+      "sha256": "a03202503a546a51a68b7c6fdc5efaa1b5701b9b440d3300fd3da831276f073d",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/stripeCustomer.ts",
+      "sha256": "0cbd49b1cb2ea05d33e4e03419cd0e1d6f0cb5bb08bee1104104fe8e003c011f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/syntheticPaymentGuard.ts",
+      "sha256": "70bc004c0b32848939192acfc993139f6ce248b8f8b7ed65013c84b937bdfcac"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/testContainment.ts",
+      "sha256": "a5a7af0dcb71250da5b94611c8eac011e0f3f2d46345a374d8511ac9d9df901e",
+      "purpose": "required unchanged TS dependency for selected tests"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/shared/trustedShipmentEvent.ts",
+      "sha256": "aba08a888d35e42dc8e2c2e5f044c494d86c1163ac16527b4a0f68a70df56991"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/workflows/Push Package Events to LEX Hub.jsonc",
+      "sha256": "6cf26fba89d511549e7fdd3e12d8df0ce66281e845014c80de96f8c019418791"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/base44/workflows/Send Live Feed to LEX.jsonc",
+      "sha256": "f7bfe06af0165a98fb1f11561c15d9cc411be4899445f43fea6085de2f558966"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/dashboard/IncompleteShipments.jsx",
+      "sha256": "5275231420a90f16a8c1935ea41e8cb3573365f34991a855bc16154551c3fb38"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/dashboard/RenderTestShipmentControl.jsx",
+      "sha256": "f7700d0882e56402cd26020e870cdb5fbaccbdb98717db5bf100036c4e98f6f7"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/dashboard/homes/IndividualHome.jsx",
+      "sha256": "41cee6f3724b0959971b7ef28b74511769dac878864a9e78f94b2901c3872457"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/dashboard/homes/OrganizationHome.jsx",
+      "sha256": "dc8037b4d7e911b123764bb1cb098d19bdef1576dcddde9a1e6c8ee765b460fb"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/shipment/BulkImportModal.jsx",
+      "sha256": "173f16adc3adc5fe2c78512315d87e75f1d9a7203d16aca5e1614055a3ee480f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/components/shipment/TrustTab.jsx",
+      "sha256": "693feebd9b5ff61097f0af8c7c704f4a908da22033e598d55fe141a894d51491"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/hooks/useShipmentDraft.js",
+      "sha256": "31751b286bc20dc5bbc2442ec1f3a3ccae47d802bf6a1cbe0dcddd786f78b00c"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/lib/merchantShipmentReads.js",
+      "sha256": "3f43cc4cf3fbb5e16e962b11cc9f63d8bfc581f198a9d2617a0544f10a02eefc"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/DeleteAccount.jsx",
+      "sha256": "eac96309057edb71785433eeeb6e1b7b00868020dc7ec9a25ae67168a964820b"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/Analytics.jsx",
+      "sha256": "3d1c806e6adb902b02917b99975d44ba2bee3775915958833940a1fdef7cb269"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/Claims.jsx",
+      "sha256": "9cd9cd80c38ffa306308a05653a3c9bbdc5eccd85fe8acb9191899020340b80f"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/ComplianceReviewPage.jsx",
+      "sha256": "88fbde7f309e1870940f86c1fd2b6eb304d20aad6e7b37677f0dcaf8635d6115"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/CreateShipment.jsx",
+      "sha256": "c1c347347c8d5200707e2f2837ac1adc7caf5b7a44dcb63326d792c6848e3eb2"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/PudoReady.jsx",
+      "sha256": "7f7016ec9d85ad80aa4ad0f2c27d060414ff575508da76983aa683cb89697b37"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/Returns.jsx",
+      "sha256": "b5c5f0f41452129eed94f38e68f9f29943a6143978249be5df23b3afe358444c"
+    },
+    {
+      "path": "source/merchant-rc1/candidate/src/pages/dashboard/Track.jsx",
+      "sha256": "38b5520ab714953f93be908a00c48d29fb9a8489d2f6cb69a990427c92e949e5"
+    },
+    {
+      "path": "source/merchant-rc1/manifest.json",
+      "sha256": "02918120e4d5af274aa7d3559dabb8958cb7d490df1d0833c1687ebb4152a490"
+    },
+    {
+      "path": "source/merchant-rc1/tests/CASProbe.development-only.json",
+      "sha256": "8455a4fbb13abc097b5d28bfb94b8a0d4c119c088693dcc49ed43200ca6420fd"
+    },
+    {
+      "path": "source/merchant-rc1/tests/base44-storage.contract.ts",
+      "sha256": "4c29e576494b1533197525977165bf9833417397b7ffd8751847b8870383ed7f"
+    },
+    {
+      "path": "source/merchant-rc1/tests/full-ui.test.mjs",
+      "sha256": "6ede44343fbcefcbc18ea6d12ffc6bf36337ad39c17f1073fcb24aa1356527ef"
+    },
+    {
+      "path": "source/merchant-rc1/tests/handlers.test.ts",
+      "sha256": "fe37f8dc0ad4a6119bbdbccdfc3460be0cf93347ac12c8554f3d2babf943e9a3"
+    },
+    {
+      "path": "source/merchant-rc1/tests/hosted/merchantCasAcceptance.entry.ts",
+      "sha256": "9f695fd09822daa5735905a6b5c8a3f01cd33140a8c3bb551ca44e5656cd1150"
+    },
+    {
+      "path": "source/merchant-rc1/tests/hosted/sdk-security.acceptance.ts",
+      "sha256": "690010af0b59e23cd1f7bbb9cb9eaf595c207f6798e9a7f247e73f57725449cd"
+    },
+    {
+      "path": "source/merchant-rc1/tests/storage-probe.test.ts",
+      "sha256": "0d748e99e74847722282b52086a89a9b709d35e3bb970b7640814b98d116453a"
+    }
+  ],
+  "credential_pattern_scan": {
+    "findings": 0,
+    "patterns": [
+      "private_key",
+      "JWT_literal",
+      "live_stripe_key",
+      "postgres_credentials",
+      "github_token",
+      "signed_download"
+    ]
+  }
+}

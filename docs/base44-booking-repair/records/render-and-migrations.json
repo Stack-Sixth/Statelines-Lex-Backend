@@ -1,0 +1,35 @@
+{
+  "read_only": true,
+  "production_changed": false,
+  "live_migrations": [
+    {
+      "name": "001_core.sql",
+      "live_sha256": "b353da60502242c84e4689e5f6baee23c155795bbd556aa8a82d8a82d566b394",
+      "candidate_sha256": "b353da60502242c84e4689e5f6baee23c155795bbd556aa8a82d8a82d566b394",
+      "match": true
+    },
+    {
+      "name": "002_domain_foundation.sql",
+      "live_sha256": "1ff0f0427e2da286372b858cda582fe4e469a5d31e4e242a01bd5e7a05209924",
+      "candidate_sha256": "1ff0f0427e2da286372b858cda582fe4e469a5d31e4e242a01bd5e7a05209924",
+      "match": true
+    },
+    {
+      "name": "003_merchant_shipment_integration.sql",
+      "live_sha256": "8ff70bdfc0d691c556e9e28db55feaccba555835b938030af91fcffcd9f331e6",
+      "candidate_sha256": "8ff70bdfc0d691c556e9e28db55feaccba555835b938030af91fcffcd9f331e6",
+      "match": true
+    }
+  ],
+  "outstanding": [
+    "004_canonical_webhook_delivery.sql",
+    "005_merchant_authorization.sql",
+    "006_synthetic_isolation.sql"
+  ],
+  "API_revision": "ee59800aab31ac39adf5727bcdbfac1eb60ec5e7",
+  "worker_revision": "2c2023a13a03c802eb1db3fb008d2397264b6f55",
+  "worker_branch": "main",
+  "worker_auto_deploy": "On Commit; no main changes performed",
+  "worker_build": "npm ci --include=dev && npm run build",
+  "worker_start": "npm run worker"
+}

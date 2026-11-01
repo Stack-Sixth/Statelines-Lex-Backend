@@ -1,0 +1,107 @@
+{
+  "name": "PlatformDelivery",
+  "type": "object",
+  "properties": {
+    "connection_id": {
+      "type": "string"
+    },
+    "connection_name": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "EventLog id (stable event identity)"
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "delivered",
+        "failed",
+        "dead_lettered",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "http_status": {
+      "type": "number"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of send attempts made against the destination"
+    },
+    "max_attempts": {
+      "type": "number",
+      "default": 5
+    },
+    "attempts_log": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Per-attempt history: {at, status, http_status, error, duration_ms}"
+    },
+    "next_attempt_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "Last webhook round-trip time in milliseconds"
+    },
+    "error": {
+      "type": "string"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "terminal": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once delivered or dead-lettered; no further automatic retries"
+    },
+    "lease_owner": {
+      "type": "string",
+      "description": "Worker id holding an active claim on this delivery"
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "connection_id",
+    "event_name",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
